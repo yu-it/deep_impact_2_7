@@ -165,13 +165,50 @@ def run(argv=None):
     lines
     | 'Split_text_to_array' >> (beam.ParDo(SplitOutput()).with_outputs(*Column_Definition))
     )
-    counts = (
-        per_elements[Column_Definition[idx]]
-        | 'GroupByCount_col{col}'.format(col = idx) >> beam.combiners.Count.PerElement()
-        | 'CountDistinct_phase1_col{col}'.format(col = idx) >> beam.Map(lambda x : (Column_Definition[idx], 1))
-        | 'GroupAndSum_col{col}'.format(col = idx) >> beam.CombinePerKey(sum)
-        for idx in range(len(Column_Definition))
-    ) | beam.Flatten()
+    def fnc(x):
+        print(x[0])
+        return [x[0][0],x[0][1] + x[1][1]]
+
+    def analyze_column(per_elements, idx):
+        return (Column_Definition[idx], per_elements[Column_Definition[idx]] \
+        | 'GroupByCount_col{col}'.format(col = idx) >> beam.combiners.Count.PerElement() \
+        | 'CountDistinct_phase1_col{col}'.format(col = idx) >> beam.Map(lambda x : ("count", 1)) \
+        | 'GroupAndSum_col{col}'.format(col = idx) >> beam.CombinePerKey(sum))
+
+
+    column_collection = dict((key, val) for key,val in [
+        analyze_column(per_elements, 0),
+        analyze_column(per_elements, 1),
+        analyze_column(per_elements, 2),
+        analyze_column(per_elements, 3),
+        analyze_column(per_elements, 4),
+        analyze_column(per_elements, 5),
+        analyze_column(per_elements, 6),
+        analyze_column(per_elements, 7),
+        analyze_column(per_elements, 8),
+        analyze_column(per_elements, 9),
+        analyze_column(per_elements, 10),
+        analyze_column(per_elements, 11),
+        analyze_column(per_elements, 12),
+        analyze_column(per_elements, 13),
+        analyze_column(per_elements, 14),
+        analyze_column(per_elements, 15),
+        analyze_column(per_elements, 16),
+        analyze_column(per_elements, 17),
+        analyze_column(per_elements, 18),
+        analyze_column(per_elements, 19),
+        analyze_column(per_elements, 20),
+        analyze_column(per_elements, 21),
+        analyze_column(per_elements, 22),
+        analyze_column(per_elements, 23),
+        analyze_column(per_elements, 24),
+        analyze_column(per_elements, 25),
+        analyze_column(per_elements, 26),
+        analyze_column(per_elements, 27),
+        analyze_column(per_elements, 28)
+    ])
+
+    counts = column_collection | beam.CoGroupByKey()
 
     # Format the counts into a PCollection of xstrings.
     def format_result(word_count):

@@ -1,0 +1,68 @@
+('count'
+ {
+'apprentice_type': [5]
+'belonging_code': [4]
+'belonging_region': [41]
+'belonging_stable': [36]
+'birthday': [1053]
+'comment_date': [16]
+'crlf': [2]
+'data_date': [2]
+'first_licence_date': [61]
+'jockey_code': [1104]
+'jockey_comment': [264]
+'jockey_name': [1104]
+'jockey_name_kana': [1102]
+'jockey_short_name': [1071]
+'last_year_leading': [71]
+'last_year_multi_praze': [12]
+'last_year_obstacle_performance': [32]
+'last_year_performance': [158]
+'last_year_special_race_performance': [31]
+'register_delete_date': [642]
+'register_delete_flag': [3]
+'reserve': [2]}
+'this_year_leading': [71]
+'this_year_multi_praze': [10]
+'this_year_obstacle_performance': [34]
+'this_year_performance': [131]
+'this_year_special_race_performance': [20]
+'total_obstacle_performance': [229]
+'total_performance': [679]
+ )
+
+
+
+[
+  {
+"apprentice_type_cnt": "4",
+"belonging_code_cnt": "3",
+"belonging_region_cnt": "40",
+"belonging_stable_cnt": "34",
+"birthday_cnt": "1051",
+"comment_date_cnt": "14",
+"crlf_cnt": "1"
+"data_date_cnt": "1",
+"first_licence_date_cnt": "0",
+"jockey_code_cnt": "1103",
+"jockey_comment_cnt": "263",
+"jockey_name_cnt": "1103",
+"jockey_name_kana_cnt": "1101",
+"jockey_short_name_cnt": "1070",
+"last_year_leading_cnt": "69",
+"last_year_multi_praze_cnt": "10",
+"last_year_obstacle_performance_cnt": "31",
+"last_year_performance_cnt": "157",
+"last_year_special_race_performance_cnt": "29",
+"register_delete_date_cnt": "640",
+"register_delete_flag_cnt": "2",
+"reserve_cnt": "1",
+"this_year_leading_cnt": "69",
+"this_year_multi_praze_cnt": "8",
+"this_year_obstacle_performance_cnt": "33",
+"this_year_performance_cnt": "130",
+"this_year_special_race_performance_cnt": "18",
+"total_obstacle_performance_cnt": "228",
+"total_performance_cnt": "678",
+  }
+]

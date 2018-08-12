@@ -91,6 +91,67 @@ Column_Definition = [
     'crlf'
 ]
 
+def map_analyzer(analyze_function, per_elements):
+    return dict((key, val) for key,val in
+        [
+        analyze_function(per_elements, 0),
+        analyze_function(per_elements, 1),
+        analyze_function(per_elements, 2),
+        analyze_function(per_elements, 3),
+        analyze_function(per_elements, 4),
+        analyze_function(per_elements, 5),
+        analyze_function(per_elements, 6),
+        analyze_function(per_elements, 7),
+        analyze_function(per_elements, 8),
+        analyze_function(per_elements, 9),
+        analyze_function(per_elements, 10),
+        analyze_function(per_elements, 11),
+        analyze_function(per_elements, 12),
+        analyze_function(per_elements, 13),
+        analyze_function(per_elements, 14),
+        analyze_function(per_elements, 15),
+        analyze_function(per_elements, 16),
+        analyze_function(per_elements, 17),
+        analyze_function(per_elements, 18),
+        analyze_function(per_elements, 19),
+        analyze_function(per_elements, 20),
+        analyze_function(per_elements, 21),
+        analyze_function(per_elements, 22),
+        analyze_function(per_elements, 23),
+        analyze_function(per_elements, 24),
+        analyze_function(per_elements, 25),
+        analyze_function(per_elements, 26),
+        analyze_function(per_elements, 27),
+        analyze_function(per_elements, 28)
+    ])
+
+def count_distinct (per_elements):
+    def count_distinct_analyzer(per_elements, idx):
+        return (Column_Definition[idx], per_elements[Column_Definition[idx]] \
+        | 'GroupByCount_col{col}'.format(col = idx) >> beam.combiners.Count.PerElement() \
+        | 'CountDistinct_phase1_col{col}'.format(col = idx) >> beam.Map(lambda x : ("count", 1)) \
+        | 'GroupAndSum_col{col}'.format(col = idx) >> beam.CombinePerKey(sum))
+
+    count_distinct = map_analyzer(count_distinct_analyzer, per_elements)
+    return count_distinct | beam.CoGroupByKey()
+
+def get_max(per_elements):
+    def calclate_max(x):
+        try:
+            if (x[0] < x[1]):
+                return x[1]
+            else:
+                return x[0]
+        except:
+            return None
+
+    def max_analyzer(per_elements, idx):
+            return (Column_Definition[idx], per_elements[Column_Definition[idx]] \
+            | 'GetMax_phase1_col{col}'.format(col = idx) >> beam.Map(lambda x : ("max", x)) \
+            | 'GetMaxGroupBy_{col}'.format(col = idx) >> beam.GroupByKey()
+            | 'GetMax_{col}'.format(col = idx) >> beam.Map(lambda x : (x[0],max(x[1]))))
+    get_max = map_analyzer(max_analyzer, per_elements)
+    return get_max | 'CoGroupBy_get_max'>> beam.CoGroupByKey()
 
 def run(argv=None):
   """Main entry point; defines and runs the wordcount pipeline."""
@@ -98,28 +159,33 @@ def run(argv=None):
   parser = argparse.ArgumentParser()
   parser.add_argument('--input',
                       dest='input',
-                      default=r'C:\\github\\deep_impact_2_7\\dataflows\\gcs_at_local\\inputs\\#local_jrdb\\a_kza.csv.gz',
+                      #default=r'C:\\github\\deep_impact_2_7\\dataflows\\gcs_at_local\\inputs\\#local_jrdb\\a_kza.csv',
+                      default=r'gs://deep_impact/raw-data/jrdb-published/20180526/a_kza.csv.gz',
                       help='Input file to process.')
   parser.add_argument('--output',
                       dest='output',
                       # CHANGE 1/5: The Google Cloud Storage path is required
                       # for outputting the results.
-                      default='C:\github\deep_impact_2_7\dataflows\gcs_at_local\output\process_result2.txt',
+                      #default='C:\github\deep_impact_2_7\dataflows\gcs_at_local\output\process_result3.txt',
+                      default='gs://yu-it-base-temp/dataflow/free/process_result3.txt',
+
                       help='Output file to write results to.')
   known_args, pipeline_args = parser.parse_known_args(argv)
   pipeline_args.extend([
       # CHANGE 2/5: (OPTIONAL) Change this to DataflowRunner to
       # run your pipeline on the Google Cloud Dataflow Service.
-      '--runner=DirectRunner',
+      '--runner=DataflowRunner',
       # CHANGE 3/5: Your project ID is required in order to run your pipeline on
       # the Google Cloud Dataflow Service.
       '--project=yu-it-base',
       # CHANGE 4/5: Your Google Cloud Storage path is required for staging local
       # files.
-      '--staging_location=C:\github\deep_impact_2_7\dataflows\gcs_at_local\staging',
+      #'--staging_location=C:\github\deep_impact_2_7\dataflows\gcs_at_local\staging',
+      '--staging_location=gs://yu-it-base-temp/dataflow/staging',
       # CHANGE 5/5: Your Google Cloud Storage path is required for temporary
       # files.
-      '--temp_location=C:\github\deep_impact_2_7\dataflows\gcs_at_local\temp',
+      #'--temp_location=C:\github\deep_impact_2_7\dataflows\gcs_at_local\temp',
+      '--temp_location=gs://yu-it-base-temp/dataflow/temp',
       '--job_name=your-wordcount-job',
   ])
 
@@ -169,46 +235,11 @@ def run(argv=None):
         print(x[0])
         return [x[0][0],x[0][1] + x[1][1]]
 
-    def analyze_column(per_elements, idx):
-        return (Column_Definition[idx], per_elements[Column_Definition[idx]] \
-        | 'GroupByCount_col{col}'.format(col = idx) >> beam.combiners.Count.PerElement() \
-        | 'CountDistinct_phase1_col{col}'.format(col = idx) >> beam.Map(lambda x : ("count", 1)) \
-        | 'GroupAndSum_col{col}'.format(col = idx) >> beam.CombinePerKey(sum))
 
 
-    column_collection = dict((key, val) for key,val in [
-        analyze_column(per_elements, 0),
-        analyze_column(per_elements, 1),
-        analyze_column(per_elements, 2),
-        analyze_column(per_elements, 3),
-        analyze_column(per_elements, 4),
-        analyze_column(per_elements, 5),
-        analyze_column(per_elements, 6),
-        analyze_column(per_elements, 7),
-        analyze_column(per_elements, 8),
-        analyze_column(per_elements, 9),
-        analyze_column(per_elements, 10),
-        analyze_column(per_elements, 11),
-        analyze_column(per_elements, 12),
-        analyze_column(per_elements, 13),
-        analyze_column(per_elements, 14),
-        analyze_column(per_elements, 15),
-        analyze_column(per_elements, 16),
-        analyze_column(per_elements, 17),
-        analyze_column(per_elements, 18),
-        analyze_column(per_elements, 19),
-        analyze_column(per_elements, 20),
-        analyze_column(per_elements, 21),
-        analyze_column(per_elements, 22),
-        analyze_column(per_elements, 23),
-        analyze_column(per_elements, 24),
-        analyze_column(per_elements, 25),
-        analyze_column(per_elements, 26),
-        analyze_column(per_elements, 27),
-        analyze_column(per_elements, 28)
-    ])
+    count_distinct_result = count_distinct(per_elements)
+    max_result = get_max(per_elements)
 
-    counts = column_collection | beam.CoGroupByKey()
 
     # Format the counts into a PCollection of xstrings.
     def format_result(word_count):
@@ -216,11 +247,13 @@ def run(argv=None):
       return '%s: %s' % (word, count)
 
     #output = counts | 'Format' >> beam.Map(format_result)
-    output = counts
+    output = [count_distinct_result,max_result] | beam.Flatten()
+    #output = max_result
 
     # Write the output using a "Write" transform that has side effects.
     # pylint: disable=expression-not-assigned
     output | WriteToText(known_args.output)
+
 
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.INFO)

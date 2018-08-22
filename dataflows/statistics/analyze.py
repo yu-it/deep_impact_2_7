@@ -40,9 +40,9 @@ with base_values as (
           ) 
           > 3 
         then 
-          null 
-        else 
           val_num 
+        else 
+          null
         end as error_val_higher,
     case 
       when 
@@ -57,9 +57,9 @@ with base_values as (
           ) 
           < -3 
         then 
-          null 
+          val_num  
         else 
-          val_num 
+          null
         end as error_val_lower
   from 
     (

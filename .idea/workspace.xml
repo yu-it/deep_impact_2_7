@@ -40,8 +40,8 @@
       <file leaf-file-name="analyze.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/dataflows/statistics/analyze.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="618">
-              <caret line="61" column="14" lean-forward="false" selection-start-line="61" selection-start-column="14" selection-end-line="61" selection-end-column="14" />
+            <state relative-caret-position="189">
+              <caret line="86" column="54" lean-forward="false" selection-start-line="86" selection-start-column="54" selection-end-line="86" selection-end-column="54" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
               </folding>
@@ -135,6 +135,8 @@
       <find>error_val_higher</find>
       <find>safe_cast</find>
       <find>error_val_</find>
+      <find>ranking</find>
+      <find>freq_if</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -779,8 +781,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/dataflows/statistics/analyze.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="618">
-          <caret line="61" column="14" lean-forward="false" selection-start-line="61" selection-start-column="14" selection-end-line="61" selection-end-column="14" />
+        <state relative-caret-position="189">
+          <caret line="86" column="54" lean-forward="false" selection-start-line="86" selection-start-column="54" selection-end-line="86" selection-end-column="54" />
           <folding>
             <element signature="e#24#37#0" expanded="true" />
           </folding>

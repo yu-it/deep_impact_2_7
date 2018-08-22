@@ -84,7 +84,7 @@ freq_info as (
       '{target_table_name}' as table_name,
       '{target_column}' as column_name,
       'ranking' as stat_name,
-      row_number() over (order by freq_info.count) as num,
+      row_number() over (order by freq_info.count desc) as num,
       safe_cast(freq_info.val as string) as val1,
       safe_cast(freq_info.count as string) as val2
     ) structs

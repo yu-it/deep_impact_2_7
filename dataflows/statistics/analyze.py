@@ -293,7 +293,7 @@ from
             '{target_column}' as column_name,
             'num_null' as stat_name,
             0 as num,
-            safe_cast(countif(val is null) as string) as val1,
+            safe_cast(countif(val is null or nullif(safe_cast(val as string),'a') =  '') as string) as val1,
             '' as val2
           ),
           struct
@@ -366,7 +366,7 @@ from
             'error_lower_min' as stat_name,
             0 as num,
             safe_cast(min(error_val_lower) as string) as val1,
-            '' as val2{target_column}
+            '' as val2
           )
         ]
       from
@@ -781,31 +781,37 @@ schema_definition = [
 
 ]
 client = bigquery.Client(project='yu-it-base')
-for table_schema in schema_definition:
-    table = table_schema["table_name"]
+with codecs.open(r"C:\github\analysissummary.txt", "w", 'utf-8') as ws:
+    for table_schema in schema_definition:
+        table = table_schema["table_name"]
 #   飛ばしたいテーブルはここに書く
 #    if table not in ["a_sed"]:
 #        print "skip({table}".format(table= table)
 #        continue
-    with codecs.open(r"C:\github\analysis_{table}.txt".format(table=table),"w", 'utf-8') as w:
-        for column in table_schema["columns"]:
-            print "processing {table}.{col}".format(col=column,table=table)
-            try:
-                current_q = sql.format(target_column=column, target_column_ambigous=column,
-                                       target_table_name=table)  # target_column_ambigous:キャストエラーが出ることあり
-                query_job = client.run_sync_query(
-                    current_q)  # API request - starts the query
-                query_job.run()
-            except:
-                print "processing(retry) {table}.{col}".format(col=column, table=table)
-                current_q = sql.format(target_column=column, target_column_ambigous="safe_cast({column} as string)".format(column=column),
-                                       target_table_name=table)  # target_column_ambigous:キャストエラーが出ることあり
-                query_job = client.run_sync_query(
-                    current_q)  # API request - starts the query
-                query_job.run()
+        with codecs.open(r"C:\github\analysis_{table}.txt".format(table=table),"w", 'utf-8') as w:
+            for column in table_schema["columns"]:
+                for round in range(5):
+                    try:
+                        current_q = sql.format(target_column=column, target_column_ambigous=column,
+                                               target_table_name=table)  # target_column_ambigous:キャストエラーが出ることあり
+                        query_job = client.run_sync_query(
+                            current_q)  # API request - starts the query
+                        query_job.run()
+                    except:
+                        print "processing(retry) {table}.{col}".format(col=column, table=table)
+                        current_q = sql.format(target_column=column, target_column_ambigous="safe_cast({column} as string)".format(column=column),
+                                               target_table_name=table)  # target_column_ambigous:キャストエラーが出ることあり
+                        query_job = client.run_sync_query(
+                            current_q)  # API request - starts the query
+                        query_job.run()
+                    print "{table}.{col}[round {round}] {rows} rows returned".format(col=column,table=table, round=round, rows = len(query_job.rows))
 
-            for row in query_job.rows:
-                w.write(",".join([unicode(row[i]) for i in range(6)]))
-                w.write("\n")
-
+                    for row in query_job.rows:
+                        record = ",".join([unicode(row[i]) for i in range(6)])
+                        w.write(record)
+                        w.write("\n")
+                        ws.write(record)
+                        ws.write("\n")
+                    if len(query_job.rows) > 0:
+                        break
 

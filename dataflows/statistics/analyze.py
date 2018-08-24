@@ -237,6 +237,15 @@ from
           (
             '{target_table_name}' as table_name,
             '{target_column}' as column_name,
+            'all_count' as stat_name,
+            0 as num,
+            safe_cast(count(1) as string) as val1,
+            '' as val2
+          ),
+          struct
+          (
+            '{target_table_name}' as table_name,
+            '{target_column}' as column_name,
             'distinct' as stat_name,
             0 as num,
             safe_cast(count(distinct val) as string) as val1,

@@ -44,7 +44,7 @@ using the Google Cloud Dataflow Service. No args are required to run the
 pipeline. You can see the results in your output bucket in the GCS browser.
 """
 
-from __future__ import absolute_import
+#from __future__ import absolute_import
 import argparse
 import logging
 import re
@@ -64,29 +64,29 @@ def run(argv=None):
   parser = argparse.ArgumentParser()
   parser.add_argument('--input',
                       dest='input',
-                      default=r'C:\github\deep_impact_2_7\dataflows\gcs_at_local\inputs\#local_jrdb\a_kza.csv',
+                      default='a_kza.csv',
                       help='Input file to process.')
   parser.add_argument('--output',
                       dest='output',
                       # CHANGE 1/5: The Google Cloud Storage path is required
                       # for outputting the results.
-                      default=r'C:\github\deep_impact_2_7\dataflows\g\o',
+                      default='inputs',
                       help='Output file to write results to.')
   known_args, pipeline_args = parser.parse_known_args(argv)
   pipeline_args.extend([
       # CHANGE 2/5: (OPTIONAL) Change this to DataflowRunner to
       # run your pipeline on the Google Cloud Dataflow Service.
-      '--runner=DirectRunner',
+      #'--runner=DirectRunner',
       # CHANGE 3/5: Your project ID is required in order to run your pipeline on
       # the Google Cloud Dataflow Service.
-      '--project=yu-it-base',
+      ##'--project=yu-it-base',
       # CHANGE 4/5: Your Google Cloud Storage path is required for staging local
       # files.
-      r'--staging_location=C:\github\deep_impact_2_7\dataflows\g\s',
+      ##'--staging_location=gs://yu-it-base-temp/dataflow/temp',
       # CHANGE 5/5: Your Google Cloud Storage path is required for temporary
       # files.
-      r'--temp_location=C:\github\deep_impact_2_7\dataflows\g\t',
-      '--job_name=mjop',
+      ##'--temp_location=inputs',
+      ##'--job_name=mjop',
   ])
 
   # We use the save_main_session option because one or more DoFn's in this

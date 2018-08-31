@@ -69,7 +69,7 @@ def get_zipfile_links(table_name, from_date, to_date):
         if date[0:4] in year_packs:
             continue
         if from_date <= date and date <= to_date:
-            ret.append((date,url))
+            ret.append({"args": (table_name,from_date,to_date),"data":(date,url)})
     return ret
 
 def file_name2date_string(file_name):

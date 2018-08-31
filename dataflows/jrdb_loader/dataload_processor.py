@@ -15,7 +15,8 @@ csvファイルとロード先テーブル名をもらってデータをロー�
 import argparse
 import logging
 import dataflows.util as util
-import dataflows.jrdb_loader.jrdb_file_scraper as scraper
+#import dataflows.jrdb_loader.jrdb_file_scraper as scraper
+import jrdb_file_scraper as scraper
 import datetime
 from apache_beam.io.filesystems import FileSystems
 from apache_beam.io.gcp.bigquery import WriteToBigQuery
@@ -98,7 +99,7 @@ def run(dataset_name, table_name, from_date, to_date):
     pipeline_args.extend([
         # CHANGE 2/5: (OPTIONAL) Change this to DataflowRunner to
         # run your pipeline on the Google Cloud Dataflow Service.
-         '--runner=DirectRunner',
+        '--runner=DataFlowRunner',
         # CHANGE 3/5: Your project ID is required in order to run your pipeline on
         # the Google Cloud Dataflow Service.
         '--project=yu-it-base',
@@ -114,16 +115,17 @@ def run(dataset_name, table_name, from_date, to_date):
     pipeline_options = PipelineOptions(pipeline_args)
     pipeline_options.view_as(SetupOptions).save_main_session = True
 
-
+    requests = [(table_name, from_date, to_date)]
     with beam.Pipeline(options=pipeline_options) as p:
         lines = (p
                  | beam.Create(
-                    scraper.get_zipfile_links(table_name, from_date, to_date)))
+                    requests))
 
         # Count the occurrences of each word.
         records = (
             lines
-            | 'RetrieveData' >> (beam.FlatMap(lambda x : scraper.expand_zip2bytearray(table_name,x, from_date,to_date)))
+            | 'ScrapingZipFile' >> (beam.FlatMap(lambda x : scraper.get_zipfile_links(x[0], x[1], x[2])))
+            | 'RetrieveData' >> (beam.FlatMap(lambda x : scraper.expand_zip2bytearray(x["args"][0],x["data"], x["args"][1],x["args"][2])))
             | 'FileToRecord' >> (beam.FlatMap(lambda x: file_to_recordset(x,charistics["record_length"])))
             | 'MapToRecord' >> (beam.Map(lambda x: split_function(x, charistics)))
 

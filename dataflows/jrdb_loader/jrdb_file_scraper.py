@@ -37,11 +37,16 @@ def http_get_from_jrdb(url,http_client):
     req = urllib2.Request(url=url, headers=headers)
     res = urllib2.urlopen(req).read()
     print "end"
+
     return res
 
-def get_all_zipfile_links(table_name):
+def cleansing_table_name(table_name):
     if re.match("a_.+",table_name):
         table_name = table_name.replace("a_","")
+    return table_name
+
+def get_all_zipfile_links(table_name):
+    table_name = cleansing_table_name(table_name)
     parser = JrdbParser(table_name)
     parser.feed(http_get_from_jrdb(url_pattern.format(table= table_name.capitalize(),path="index.html"),None))
     return parser.list_of_year_packs, parser.list_of_links
@@ -77,16 +82,19 @@ def file_name2date_string(file_name):
 
 
 
-def expand_zip2bytearray(table_name, list_of_url, from_date, to_date):
+def expand_zip2bytearray(table_name,entry, from_date, to_date):
+    table_name = cleansing_table_name(table_name)
     ret = []
-    for date, url in list_of_url:
-        for file_name, byte_seq in util.extract_zip_file_entry(bytearray(http_get_from_jrdb(url,None))):
-            date = file_name2date_string(file_name)
-            if from_date <= date and date <= to_date and table_name in file_name.lower():
-                ret.append((file_name,byte_seq))
+    entry_date, url = entry
+    for file_name, byte_seq in util.extract_zip_file_entry(bytearray(http_get_from_jrdb(url,None))):
+        date = file_name2date_string(file_name)
+        if from_date <= date and date <= to_date and table_name in file_name.lower():
+            ret.append((file_name,byte_seq))
     return ret
 
 def get_jrdb_data(table_name, from_date, to_date):
     list = get_zipfile_links(table_name, from_date, to_date)
-    data =  expand_zip2bytearray(table_name, list, from_date, to_date)
+    data_array = []
+    for entry in list:
+        data_array.expand(expand_zip2bytearray(table_name, entry, from_date, to_date))
 

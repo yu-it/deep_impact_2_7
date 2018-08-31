@@ -15,10 +15,9 @@ csvファイルとロード先テーブル名をもらってデータをロー�
 import argparse
 import logging
 import dataflows.util as util
-
+import datetime
 from apache_beam.io.filesystems import FileSystems
 from apache_beam.io.gcp.bigquery import WriteToBigQuery
-from apache_beam.io import WriteToBigQuery
 from apache_beam.io import WriteToText
 
 from past.builtins import unicode
@@ -32,21 +31,47 @@ from dataflows import bq
 
 DataCharisticsQuery = """
 #standardSQL
-select sum(length) over (partition by null) + 2 record_length, c.* from jrdb_raw_data_schema_info.data_charistics c where table_name = '{table_name}'order by seq
+select sum(length) over (partition by null) + 2 record_length, c.* from jrdb_raw_data_schema_info.data_characteristics c where table_name = '{table_name}'order by seq
 """
 def get_data_charistics(dataset_name, table_name):
     chars = bq.selectFromBq(DataCharisticsQuery.format(table_name=table_name))
     return {"characteristic": chars,
             "record_length": chars[0][0]}
 
+def file_to_recordset(file_name,record_length):
+    byte_seq = "".join(util.extract_zip_file_entry(bytearray(FileSystems.open(
+        file_name, 'application/octet-stream').read())))
+    records = [byte_seq[idx * record_length : (1 + idx) * record_length]for idx in range(len(byte_seq) / record_length)]
+    return records
+
+
 def special_translation(table_name,column_name, value):
     pass
-def split_function(record, charistics):
-    record = [str.decode(record[entry[6] - 1:(entry[6] + entry[5]) - 1],"shift-jis") for entry in charistics["characteristic"][0:-1]]
-    record.append("")
+
+def convert_to_datetime(column_value,type_detail):
+
+    if len(column_value) == 4 and type_detail == u"日時":
+        return str(datetime.datetime(int(column_value),1,1))
+
+    if len(column_value) == 4 and type_detail == u"時刻":
+        return str(datetime.datetime(1990, 1, 1,int(column_value[0:2]),int(column_value[2:4])))
+
+    if len(column_value) == 8 and type_detail == u"日時":
+        return str(datetime.datetime(int(column_value[0:4]),int(column_value[4:6]),int(column_value[6:8])))
+
+def split_function(recordstring, charistics):
+    record = {}
+    for entry in charistics["characteristic"][0:-1]:
+        column_value = str.decode(recordstring[entry[6] - 1:(entry[6] + entry[5]) - 1], "shift-jis").strip()
+        if entry[8] in (u"日時", u"時刻"):
+            column_value = convert_to_datetime(column_value,entry[8])
+
+        record.update({entry[2]:column_value})
+
+    record.update({"crlf":""})
     return record
 
-def run(dataset_name, table_name, csv_file_url):
+def run(dataset_name, table_name, from_date, to_date):
     #
     """
     1.
@@ -77,11 +102,7 @@ def run(dataset_name, table_name, csv_file_url):
     pipeline_options = PipelineOptions(pipeline_args)
     pipeline_options.view_as(SetupOptions).save_main_session = True
 
-    def open_file(file_name):
-        byte_seq = "".join(util.extract_zip_file_entry(bytearray(FileSystems.open(
-            file_name, 'application/octet-stream').read())))
-        records = [byte_seq[idx * charistics["record_length"] : (1 + idx) * charistics["record_length"]]for idx in range(len(byte_seq) / charistics["record_length"])]
-        return records
+
     with beam.Pipeline(options=pipeline_options) as p:
         lines = (p
                  | beam.Create([
@@ -90,11 +111,11 @@ def run(dataset_name, table_name, csv_file_url):
         # Count the occurrences of each word.
         records = (
             lines
-            | 'FileToRecord' >> (beam.FlatMap(lambda x: open_file(x)))
+            | 'FileToRecord' >> (beam.FlatMap(lambda x: file_to_recordset(x,charistics["record_length"])))
             | 'MapToRecord' >> (beam.Map(lambda x: split_function(x, charistics)))
 
         )
-        records | WriteToText("C:\github\deep_impact_2_7\dataflows\gcs_at_local\inputs\#local_jrdb\BAC000105\output")
+        records | WriteToBigQuery(table_name,dataset_name,"yu-it-base")
 
     pass
 
@@ -102,6 +123,7 @@ if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
     dataset_name="jrdb_raw_data"
     table_name="a_bac"
-    csv_file_url="C:\github\deep_impact_2_7\dataflows\gcs_at_local\inputs\#local_jrdb\BAC000105.zip"
+    from_date = "20180227"
+    to_date = "20180527"
 
-run(dataset_name, table_name, csv_file_url)
+run(dataset_name, table_name, from_date, to_date)

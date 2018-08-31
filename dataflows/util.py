@@ -42,8 +42,14 @@ def extract_zip_file_entry(byte_seq):
         #拡張フィールド長さ:10+c,10+d
         content_start_position = offset + ZipFileVariableLengthFileldStartPosition + file_name_length + ext_field_length
         content = byte_seq[content_start_position:content_start_position + file_length]
-        ret.append(zlib.decompress(str(content),-zlib.MAX_WBITS))
+        file_name_start_position = offset + ZipFileVariableLengthFileldStartPosition
+        file_name = byte_seq[file_name_start_position : file_name_start_position + file_name_length]
+        print "file {file_name} is detected decompressing...".format(file_name = file_name)
+        ret.append((str(file_name), zlib.decompress(str(content),-zlib.MAX_WBITS)))
+        print "complete decompressing"
         offset = byte_seq.find(ZipFileLocalFileHeaderSignature, offset + 1) #offset1とかにすると一つしかファイルなければ-1
     return ret
 
 
+def debug(str):
+    print str

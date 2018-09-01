@@ -118,17 +118,17 @@ def run(dataset_name, table_name, from_date, to_date):
     pipeline_options = PipelineOptions(pipeline_args)
     pipeline_options.view_as(SetupOptions).save_main_session = True
 
+
     requests = [(table_name, from_date, to_date)]
     with beam.Pipeline(options=pipeline_options) as p:
         lines = (p
                  | beam.Create(
                     requests))
-
         # Count the occurrences of each word.
         records = (
             lines
             | 'ScrapingZipFile' >> (beam.FlatMap(lambda x : scraper.get_zipfile_links(x[0], x[1], x[2],auth_data[0],auth_data[1])))
-            | 'RetrieveData' >> (beam.FlatMap(lambda x : scraper.expand_zip2bytearray(x["args"][0],x["data"], x["args"][1],x["args"][2],auth_data[0],auth_data[1])))
+            | 'RetrieveData' >> (beam.FlatMap(lambda x : scraper.expand_zip2bytearray(x["args"][0], x["data"], x["args"][1], x["args"][2], auth_data[0], auth_data[1])))
             | 'FileToRecord' >> (beam.FlatMap(lambda x: file_to_recordset(x,charistics["record_length"])))
             | 'MapToRecord' >> (beam.Map(lambda x: split_function(x, charistics)))
 
@@ -142,8 +142,8 @@ if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
     dataset_name="jrdb_raw_data"
     table_name="a_bac"
-    from_date = "20180227"
-    to_date = "20180527"
+    from_date = "19990101"
+    to_date = "19990130"
 
 
 #filter_terms = p | beam.io.ReadFromText("gs://deep_impact/assets/jrdb/auth_info.txt")

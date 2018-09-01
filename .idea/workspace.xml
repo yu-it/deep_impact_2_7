@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7e823435-9edc-4f5e-8f96-04ca59a74679" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/setup.py" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/dataflows/jrdb_loader/dataload_processor.py" afterPath="$PROJECT_DIR$/dataflows/jrdb_loader/dataload_processor.py" />
       <change beforePath="$PROJECT_DIR$/dataflows/jrdb_loader/jrdb_file_scraper.py" afterPath="$PROJECT_DIR$/dataflows/jrdb_loader/jrdb_file_scraper.py" />
     </list>
@@ -19,8 +17,8 @@
       <file leaf-file-name="dataload_processor.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/dataflows/jrdb_loader/dataload_processor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="601">
-              <caret line="144" column="20" lean-forward="false" selection-start-line="144" selection-start-column="20" selection-end-line="144" selection-end-column="20" />
+            <state relative-caret-position="528">
+              <caret line="103" column="8" lean-forward="false" selection-start-line="103" selection-start-column="8" selection-end-line="103" selection-end-column="8" />
               <folding>
                 <element signature="e#231#246#0" expanded="true" />
               </folding>
@@ -88,35 +86,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
-        <entry file="file://C:/Python27/venvs/beam/Lib/site-packages/google/cloud/bigquery/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="442">
-              <caret line="31" column="0" lean-forward="false" selection-start-line="31" selection-start-column="0" selection-end-line="31" selection-end-column="0" />
-              <folding>
-                <marker date="1535760282986" expanded="true" signature="0:24" ph="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="client.py" pinned="false" current-in-tab="false">
-        <entry file="file://C:/Python27/venvs/beam/Lib/site-packages/google/cloud/bigquery/client.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="334">
-              <caret line="19" column="0" lean-forward="false" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
-              <folding>
-                <marker date="1535760283010" expanded="true" signature="0:24" ph="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="jrdb_file_scraper.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/dataflows/jrdb_loader/jrdb_file_scraper.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="319">
-              <caret line="88" column="4" lean-forward="false" selection-start-line="88" selection-start-column="4" selection-end-line="88" selection-end-column="4" />
+            <state relative-caret-position="732">
+              <caret line="104" column="0" lean-forward="true" selection-start-line="104" selection-start-column="0" selection-end-line="104" selection-end-column="0" />
               <folding>
                 <element signature="e#21#50#0" expanded="true" />
               </folding>
@@ -135,7 +109,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>odds_multi_10oclock</find>
       <find>course</find>
       <find>num_null</find>
       <find>null</find>
@@ -164,6 +137,7 @@
       <find>http_get_from_jrdb</find>
       <find>get_all_zipfile_links</find>
       <find>get_zipfile_links</find>
+      <find>args</find>
       <find>sc</find>
     </findStrings>
   </component>
@@ -468,9 +442,9 @@
           <option name="timeStamp" value="69" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/dataflows/jrdb_loader/dataload_processor.py</url>
-          <line>150</line>
-          <option name="timeStamp" value="73" />
+          <url>file://$PROJECT_DIR$/dataflows/jrdb_loader/jrdb_file_scraper.py</url>
+          <line>93</line>
+          <option name="timeStamp" value="79" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -480,7 +454,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="74" />
+      <option name="time" value="80" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -906,8 +880,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/dataflows/jrdb_loader/jrdb_file_scraper.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="319">
-          <caret line="88" column="4" lean-forward="false" selection-start-line="88" selection-start-column="4" selection-end-line="88" selection-end-column="4" />
+        <state relative-caret-position="732">
+          <caret line="104" column="0" lean-forward="true" selection-start-line="104" selection-start-column="0" selection-end-line="104" selection-end-column="0" />
           <folding>
             <element signature="e#21#50#0" expanded="true" />
           </folding>
@@ -916,8 +890,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/dataflows/jrdb_loader/dataload_processor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="601">
-          <caret line="144" column="20" lean-forward="false" selection-start-line="144" selection-start-column="20" selection-end-line="144" selection-end-column="20" />
+        <state relative-caret-position="528">
+          <caret line="103" column="8" lean-forward="false" selection-start-line="103" selection-start-column="8" selection-end-line="103" selection-end-column="8" />
           <folding>
             <element signature="e#231#246#0" expanded="true" />
           </folding>

@@ -66,14 +66,14 @@ def get_zipfile_links(table_name, from_date, to_date,user_id,password):
     for year,url in list_of_year_packs:
         year_packs.append(year)
         if from_year <= year and year <= to_year:
-            ret.append((year,url))
+            ret.append({"args": (table_name,from_date,to_date),"data":url})
 
     #週次パックから抽出
     for date,url in list_of_links:
         if date[0:4] in year_packs:
             continue
         if from_date <= date and date <= to_date:
-            ret.append({"args": (table_name,from_date,to_date),"data":(date,url)})
+            ret.append({"args": (table_name,from_date,to_date),"data":url})
     return ret
 
 def file_name2date_string(file_name):
@@ -89,7 +89,7 @@ def file_name2date_string(file_name):
 def expand_zip2bytearray(table_name,entry, from_date, to_date,user_id,password):
     table_name = cleansing_table_name(table_name)
     ret = []
-    entry_date, url = entry
+    url = entry
     for file_name, byte_seq in util.extract_zip_file_entry(bytearray(http_get_from_jrdb(url,(user_id,password)))):
         date = file_name2date_string(file_name)
         if from_date <= date and date <= to_date and table_name in file_name.lower():

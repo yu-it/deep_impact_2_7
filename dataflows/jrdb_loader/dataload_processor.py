@@ -14,18 +14,15 @@ csvファイルとロード先テーブル名をもらってデータをロー�
 # from __future__ import absolute_import
 import argparse
 import logging
-import dataflows.util as util
-#import dataflows.jrdb_loader.jrdb_file_scraper as scraper
-import jrdb_file_scraper as scraper
+
+import dataflows.jrdb_loader.jrdb_file_scraper as scraper
 import datetime
-from apache_beam.io.filesystems import FileSystems
 from apache_beam.io.gcp.bigquery import WriteToBigQuery
 from apache_beam.io import WriteToText
 
 from past.builtins import unicode
 
 import apache_beam as beam
-from apache_beam.io import ReadFromText
 from apache_beam.io import WriteToText
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
@@ -87,6 +84,11 @@ def run(dataset_name, table_name, from_date, to_date):
     """
 
     charistics = get_data_charistics(dataset_name, table_name)
+    auth_data = bq.selectFromBq(
+        """
+        #standardsql
+        select * from jrdb_raw_data_schema_info.auth_info
+        """)[0]
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--output',
@@ -110,6 +112,7 @@ def run(dataset_name, table_name, from_date, to_date):
         # files.
         '--temp_location=gs://yu-it-base-temp/dataflow/temp',
         '--job_name=mjop',
+        '--setup_file=C:\github\deep_impact_2_7\setup.py'
     ])
 
     pipeline_options = PipelineOptions(pipeline_args)
@@ -124,14 +127,14 @@ def run(dataset_name, table_name, from_date, to_date):
         # Count the occurrences of each word.
         records = (
             lines
-            | 'ScrapingZipFile' >> (beam.FlatMap(lambda x : scraper.get_zipfile_links(x[0], x[1], x[2])))
-            | 'RetrieveData' >> (beam.FlatMap(lambda x : scraper.expand_zip2bytearray(x["args"][0],x["data"], x["args"][1],x["args"][2])))
+            | 'ScrapingZipFile' >> (beam.FlatMap(lambda x : scraper.get_zipfile_links(x[0], x[1], x[2],auth_data[0],auth_data[1])))
+            | 'RetrieveData' >> (beam.FlatMap(lambda x : scraper.expand_zip2bytearray(x["args"][0],x["data"], x["args"][1],x["args"][2],auth_data[0],auth_data[1])))
             | 'FileToRecord' >> (beam.FlatMap(lambda x: file_to_recordset(x,charistics["record_length"])))
             | 'MapToRecord' >> (beam.Map(lambda x: split_function(x, charistics)))
 
         )
-        #records | WriteToBigQuery(table_name,dataset_name,"yu-it-base")
-        records | WriteToText("#local\\out\\test.txt")
+        records | WriteToBigQuery(table_name,dataset_name,"yu-it-base")
+        #records | WriteToText("#local\\out\\test.txt")
 
     pass
 
@@ -141,5 +144,8 @@ if __name__ == '__main__':
     table_name="a_bac"
     from_date = "20180227"
     to_date = "20180527"
+
+
+#filter_terms = p | beam.io.ReadFromText("gs://deep_impact/assets/jrdb/auth_info.txt")
 
 run(dataset_name, table_name, from_date, to_date)

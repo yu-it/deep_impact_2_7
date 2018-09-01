@@ -6,6 +6,7 @@ from html.parser import HTMLParser
 
 
 url_pattern = "http://www.jrdb.com/member/datazip/{table}/{path}"
+
 class JrdbParser(HTMLParser):
     def __init__(self, table_name):
         HTMLParser.__init__(self)
@@ -26,12 +27,15 @@ class JrdbParser(HTMLParser):
                     self.list_of_links.append((date_string, "http://www.jrdb.com/member/datazip/{table}/{path}".format(table=self.table_name.capitalize(), path=attr[1])))
 
 
-
+user =""
+password=""
 def http_get_from_jrdb(url,http_client):
     print "req start:{url}".format(url = url)
-    with open("C:\github\deep_impact_2_7\dataflows\jrdb_loader\#local\\auth_info.txt","r") as reader:
-        user = reader.readline()[0:8]
-        password = reader.readline()[0:8]
+    #with open("C:\github\deep_impact_2_7\dataflows\jrdb_loader\#local\\auth_info.txt","r") as reader:
+    #    user = reader.readline()[0:8]
+    #    password = reader.readline()[0:8]
+    user = http_client[0]
+    password = http_client[1]
     headers = {}
     headers["authorization"] = "Basic " + (user + ":" + password).encode("base64")[:-1]
     req = urllib2.Request(url=url, headers=headers)
@@ -45,14 +49,14 @@ def cleansing_table_name(table_name):
         table_name = table_name.replace("a_","")
     return table_name
 
-def get_all_zipfile_links(table_name):
+def get_all_zipfile_links(table_name,user_id,password):
     table_name = cleansing_table_name(table_name)
     parser = JrdbParser(table_name)
-    parser.feed(http_get_from_jrdb(url_pattern.format(table= table_name.capitalize(),path="index.html"),None))
+    parser.feed(http_get_from_jrdb(url_pattern.format(table= table_name.capitalize(),path="index.html"),(user_id,password)))
     return parser.list_of_year_packs, parser.list_of_links
 
-def get_zipfile_links(table_name, from_date, to_date):
-    list_of_year_packs, list_of_links = get_all_zipfile_links(table_name)
+def get_zipfile_links(table_name, from_date, to_date,user_id,password):
+    list_of_year_packs, list_of_links = get_all_zipfile_links(table_name,user_id,password)
     from_year = from_date[0:4]
     to_year = to_date[0:4]
     ret = []
@@ -82,19 +86,19 @@ def file_name2date_string(file_name):
 
 
 
-def expand_zip2bytearray(table_name,entry, from_date, to_date):
+def expand_zip2bytearray(table_name,entry, from_date, to_date,user_id,password):
     table_name = cleansing_table_name(table_name)
     ret = []
     entry_date, url = entry
-    for file_name, byte_seq in util.extract_zip_file_entry(bytearray(http_get_from_jrdb(url,None))):
+    for file_name, byte_seq in util.extract_zip_file_entry(bytearray(http_get_from_jrdb(url,(user_id,password)))):
         date = file_name2date_string(file_name)
         if from_date <= date and date <= to_date and table_name in file_name.lower():
             ret.append((file_name,byte_seq))
     return ret
 
-def get_jrdb_data(table_name, from_date, to_date):
-    list = get_zipfile_links(table_name, from_date, to_date)
+def get_jrdb_data(table_name, from_date, to_date,user_id,password):
+    list = get_zipfile_links(table_name, from_date, to_date,user_id,password)
     data_array = []
     for entry in list:
-        data_array.expand(expand_zip2bytearray(table_name, entry, from_date, to_date))
+        data_array.expand(expand_zip2bytearray(table_name, entry, from_date, to_date,user_id,password))
 

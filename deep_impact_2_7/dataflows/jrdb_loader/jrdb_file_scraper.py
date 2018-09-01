@@ -30,7 +30,7 @@ class JrdbParser(HTMLParser):
 user =""
 password=""
 def http_get_from_jrdb(url,http_client):
-    print "req start:{url}".format(url = url)
+    util.debug("req start:{url}".format(url = url))
     #with open("C:\github\deep_impact_2_7\dataflows\jrdb_loader\#local\\auth_info.txt","r") as reader:
     #    user = reader.readline()[0:8]
     #    password = reader.readline()[0:8]
@@ -40,7 +40,7 @@ def http_get_from_jrdb(url,http_client):
     headers["authorization"] = "Basic " + (user + ":" + password).encode("base64")[:-1]
     req = urllib2.Request(url=url, headers=headers)
     res = urllib2.urlopen(req).read()
-    print "end"
+    util.debug("end")
 
     return res
 

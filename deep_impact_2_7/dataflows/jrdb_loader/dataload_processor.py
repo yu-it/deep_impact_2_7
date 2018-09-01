@@ -26,6 +26,7 @@ import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
 from deep_impact_2_7.dataflows import bq
+import deep_impact_2_7.dataflows.util as util
 
 DataCharisticsQuery = """
 #standardSQL
@@ -59,11 +60,18 @@ def split_function(recordentry, charistics):
     derive_from = recordentry[0]
     recordstring = recordentry[1]
     record = {}
-    for entry in charistics["characteristic"][0:-1]:
-        column_value = str.decode(recordstring[entry[6] - 1:(entry[6] + entry[5]) - 1], "shift-jis").strip()
-        if entry[8] in (u"日時", u"時刻"):
-            column_value = convert_to_datetime(column_value,entry[8])
+    for idx,entry in enumerate(charistics["characteristic"][0:-1]):
 
+        util.debug("No{idx} position:{x}-{y}".format(idx = idx, x = entry[6] - 1, y = (entry[6] + entry[5]) - 1))
+        try:
+            column_value = str.decode(recordstring[entry[6] - 1:(entry[6] + entry[5]) - 1], "ms932").strip()
+            if entry[8] in (u"日時", u"時刻"):
+                column_value = convert_to_datetime(column_value,entry[8])
+            if entry[9] <> u"":
+                column_value = eval(entry[9],{"x":column_value})
+        except Exception as ex:
+            column_value = "-"
+            util.alert("detect {exname} at No{idx} position:{x}-{y},sequence:{seq}".format(exname=str(ex), idx = idx, x = entry[6] - 1, y = (entry[6] + entry[5]) - 1,seq=recordstring[entry[6] - 1:(entry[6] + entry[5]) - 1]))
         record.update({entry[2]:column_value})
 
     record.update({"distributed_date":derive_from})
@@ -145,12 +153,17 @@ def run(dataset_name, table_name, from_date, to_date):
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
     dataset_name="jrdb_raw_data"
-    table_name="a_bac"
-    from_date = "20180104"
+    table_name="a_sed"
+    from_date = "20180504"
     to_date = "20180604"
 
 
 #filter_terms = p | beam.io.ReadFromText("gs://deep_impact/assets/jrdb/auth_info.txt")
 
 
-run(dataset_name, table_name, from_date, to_date)
+run(dataset_name, "a_kyi", from_date, to_date)
+#run(dataset_name, "a_bac", from_date, to_date)
+#run(dataset_name, "a_kab", from_date, to_date)
+#run(dataset_name, "a_kza", from_date, to_date)
+#run(dataset_name, "a_sed", from_date, to_date)
+#run(dataset_name, "a_ukc", from_date, to_date)

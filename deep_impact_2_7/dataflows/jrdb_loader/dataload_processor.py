@@ -159,8 +159,7 @@ if __name__ == '__main__':
 
 
 #filter_terms = p | beam.io.ReadFromText("gs://deep_impact/assets/jrdb/auth_info.txt")
-
-
+print "注意:kza(マスタ)は全量取り込み時しか取り込みされません"
 run(dataset_name, "a_kza", from_date, to_date)
 run(dataset_name, "a_kyi", from_date, to_date)
 run(dataset_name, "a_bac", from_date, to_date)

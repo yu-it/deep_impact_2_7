@@ -1,12 +1,12 @@
 # -*-coding:utf-8-*-
+
 import deep_impact_2_7.dataflows.util as util
 import re
 import urllib2
 from html.parser import HTMLParser
 import datetime
-
 url_pattern = "http://www.jrdb.com/member/datazip/{table}/{path}"
-
+url_master_index = "http://www.jrdb.com/member/data/"
 class JrdbParser(HTMLParser):
     def __init__(self, table_name):
         HTMLParser.__init__(self)
@@ -19,7 +19,7 @@ class JrdbParser(HTMLParser):
             return
 
         for attr in attrs:
-            if attr[0].lower() == "href" and self.table_name in attr[1].lower():
+            if attr[0].lower() == "href" and self.table_name in attr[1].lower() and ".zip" == attr[1][-4:].lower():
                 date_string = file_name2date_string(attr[1])
                 if len(date_string) == 4:
                     self.list_of_year_packs.append((date_string, "http://www.jrdb.com/member/datazip/{table}/{path}".format(table=self.table_name.capitalize(), path=attr[1])))
@@ -52,7 +52,13 @@ def cleansing_table_name(table_name):
 def get_all_zipfile_links(table_name,user_id,password):
     table_name = cleansing_table_name(table_name)
     parser = JrdbParser(table_name)
-    parser.feed(http_get_from_jrdb(url_pattern.format(table= table_name.capitalize(),path="index.html"),(user_id,password)))
+    try:
+        parser.feed(http_get_from_jrdb(url_pattern.format(table= table_name.capitalize(),path="index.html"),(user_id,password)))
+    except urllib2.HTTPError as ex:
+        if ex.code == 404:
+            parser.feed(http_get_from_jrdb(url_master_index,(user_id,password)))
+        else:
+            raise ex
     return parser.list_of_year_packs, parser.list_of_links
 
 def get_zipfile_links(table_name, from_date, to_date,user_id,password):

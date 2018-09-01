@@ -161,9 +161,9 @@ if __name__ == '__main__':
 #filter_terms = p | beam.io.ReadFromText("gs://deep_impact/assets/jrdb/auth_info.txt")
 
 
+run(dataset_name, "a_kza", from_date, to_date)
 run(dataset_name, "a_kyi", from_date, to_date)
-#run(dataset_name, "a_bac", from_date, to_date)
-#run(dataset_name, "a_kab", from_date, to_date)
-#run(dataset_name, "a_kza", from_date, to_date)
-#run(dataset_name, "a_sed", from_date, to_date)
-#run(dataset_name, "a_ukc", from_date, to_date)
+run(dataset_name, "a_bac", from_date, to_date)
+run(dataset_name, "a_kab", from_date, to_date)
+run(dataset_name, "a_sed", from_date, to_date)
+run(dataset_name, "a_ukc", from_date, to_date)

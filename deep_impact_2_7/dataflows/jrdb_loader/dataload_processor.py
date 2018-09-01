@@ -15,7 +15,7 @@ csvファイルとロード先テーブル名をもらってデータをロー�
 import argparse
 import logging
 
-import dataflows.jrdb_loader.jrdb_file_scraper as scraper
+import deep_impact_2_7.dataflows.jrdb_loader.jrdb_file_scraper as scraper
 import datetime
 from apache_beam.io.gcp.bigquery import WriteToBigQuery
 from apache_beam.io import WriteToText
@@ -23,10 +23,9 @@ from apache_beam.io import WriteToText
 from past.builtins import unicode
 
 import apache_beam as beam
-from apache_beam.io import WriteToText
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
-from dataflows import bq
+from deep_impact_2_7.dataflows import bq
 
 DataCharisticsQuery = """
 #standardSQL
@@ -67,21 +66,23 @@ def split_function(recordentry, charistics):
 
         record.update({entry[2]:column_value})
 
-    record.update({"crlf":derive_from})
+    record.update({"distributed_date":derive_from})
     return record
 
+def get_last_distributed_date(table_name):
+    from_date = bq.selectFromBq(
+        """
+        #standardsql
+        select max(distributed_date) from jrdb_raw_data.{table_name}
+        """.format(table_name=table_name))
+    if from_date is None or len(from_date) == 0:
+        from_date = "19900101"
+    else:
+        from_date = (from_date[0][0] + datetime.timedelta(days=1)).strftime('%Y%m%d')
+    return from_date
+
+
 def run(dataset_name, table_name, from_date, to_date):
-    #
-    """
-    1.
-    テーブル名をキーに
-    　jrdb_raw_data_schema_info.data_charisticsをロードする。
-    2.
-    data_charisticsの桁数定義と型定義に従いデータを変換する
-    3.
-    ロードする
-    4, 独自変換があれば行う
-    """
 
     charistics = get_data_charistics(dataset_name, table_name)
     auth_data = bq.selectFromBq(
@@ -89,7 +90,10 @@ def run(dataset_name, table_name, from_date, to_date):
         #standardsql
         select * from jrdb_raw_data_schema_info.auth_info
         """)[0]
-
+    if from_date is None:
+        from_date = get_last_distributed_date()
+    if to_date is None:
+        to_date = "99999999"
     parser = argparse.ArgumentParser()
     parser.add_argument('--output',
                         dest='output',
@@ -101,7 +105,7 @@ def run(dataset_name, table_name, from_date, to_date):
     pipeline_args.extend([
         # CHANGE 2/5: (OPTIONAL) Change this to DataflowRunner to
         # run your pipeline on the Google Cloud Dataflow Service.
-        '--runner=DataFlowRunner',
+        #'--runner=DataFlowRunner',
         # CHANGE 3/5: Your project ID is required in order to run your pipeline on
         # the Google Cloud Dataflow Service.
         '--project=yu-it-base',
@@ -111,7 +115,7 @@ def run(dataset_name, table_name, from_date, to_date):
         # CHANGE 5/5: Your Google Cloud Storage path is required for temporary
         # files.
         '--temp_location=gs://yu-it-base-temp/dataflow/temp',
-        '--job_name=mjop',
+        '--job_name={table_name}-{fromdate}-to-{todate}'.format(table_name=table_name.replace("_","-"), fromdate= from_date, todate=to_date),
         '--setup_file=C:\github\deep_impact_2_7\setup.py'
     ])
 
@@ -133,8 +137,8 @@ def run(dataset_name, table_name, from_date, to_date):
             | 'MapToRecord' >> (beam.Map(lambda x: split_function(x, charistics)))
 
         )
-        records | WriteToBigQuery(table_name,dataset_name,"yu-it-base")
-        #records | WriteToText("#local\\out\\test.txt")
+        #records | WriteToBigQuery(table_name,dataset_name,"yu-it-base")
+        records | WriteToText("#local\\out\\test_{table_name}.txt".format(table_name=table_name))
 
     pass
 
@@ -142,10 +146,11 @@ if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
     dataset_name="jrdb_raw_data"
     table_name="a_bac"
-    from_date = "19990101"
-    to_date = "19990130"
+    from_date = "20180104"
+    to_date = "20180604"
 
 
 #filter_terms = p | beam.io.ReadFromText("gs://deep_impact/assets/jrdb/auth_info.txt")
+
 
 run(dataset_name, table_name, from_date, to_date)

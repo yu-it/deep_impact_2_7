@@ -1,423 +1,20 @@
 # -*- coding: utf-8 -*-
-import codecs
-from google.cloud import bigquery
-sql = """
-#standardsql
-with base_values as (
-  select 
-    val as val, 
-    val_num as val_num, 
-    case 
-      when 
-        ifnull
-          (
-            safe_divide
-              (
-                abs
-                  (
-                    dev_val
-                  ) 
-                ,stddev_val
-              )
-            ,0
-          ) 
-          > 3 
-        then 
-          null 
-        else 
-          val_num 
-        end as val_without_error,
-    case 
-      when 
-        ifnull
-          (
-            safe_divide
-              (
-                 dev_val
-                ,stddev_val
-              )
-            ,0
-          ) 
-          > 3 
-        then 
-          val_num 
-        else 
-          null
-        end as error_val_higher,
-    case 
-      when 
-        ifnull
-          (
-            safe_divide
-              (
-                 dev_val
-                ,stddev_val
-              )
-            ,0
-          ) 
-          < -3 
-        then 
-          val_num  
-        else 
-          null
-        end as error_val_lower
-  from 
-    (
-      select
-        val as val, 
-        val_num as val_num,
-        val_num - avg(val_num) over (partition by null) as dev_val,
-        stddev(val_num) over (partition by null) as stddev_val
-      from
-        (
-          select 
-            {target_column} as val, 
-            safe_cast({target_column_ambigous} as numeric) as val_num
-          from
-            `yu-it-base.jrdb_raw_data.{target_table_name}` as kyi 
-        ) vals
-    )
-),
-freq_info as (
-  select 
-    struct(
-      '{target_table_name}' as table_name,
-      '{target_column}' as column_name,
-      'ranking' as stat_name,
-      row_number() over (order by freq_info.count desc) as num,
-      safe_cast(freq_info.val as string) as val1,
-      safe_cast(freq_info.count as string) as val2
-    ) structs
-  from
-    (
-      select 
-        struct
-          (
-            val as val,
-            count(1) as count
-          ) as freq_info
-      from
-        base_values
-      group by val
-      order by freq_info.count desc
-      limit 10
-    )
-),
-histogram_info as (
-  select
-    struct 
-      (
-        '{target_table_name}' as table_name,
-        '{target_column}' as column_name,
-        'ntile_avg' as stat_name,
-        ntile_rank as num,
-        safe_cast(avg(val_num) as string) as val1,
-        '' as val2
-      ) structs
-  from
-    (
-      select
-        ntile(10) over (order by val) ntile_rank,
-        val_num
-      from
-        base_values
-    )
-  group by ntile_rank
-  union all
-  select
-    struct 
-      (
-        '{target_table_name}' as table_name,
-        '{target_column}' as column_name,
-        'ntile_min' as stat_name,
-        ntile_rank as num,
-        safe_cast(min(val) as string) as val1,
-        '' as val2
-      ) structs
-  from
-    (
-      select
-        ntile(10) over (order by val) ntile_rank,
-        val
-      from
-        base_values
-    )
-  group by ntile_rank
-  union all
-  select
-    struct 
-      (
-        '{target_table_name}' as table_name,
-        '{target_column}' as column_name,
-        'ntile_max' as stat_name,
-        ntile_rank as num,
-        safe_cast(max(val) as string) as val1,
-        '' as val2
-      ) structs
-  from
-    (
-      select
-        ntile(10) over (order by val) ntile_rank,
-        val
-      from
-        base_values
-    )
-  group by ntile_rank
-),
-histogram_info_without_error as (
-  select
-    struct 
-      (
-        '{target_table_name}' as table_name,
-        '{target_column}' as column_name,
-        'ntile_without_error_avg' as stat_name,
-        ntile_rank as num,
-        safe_cast(avg(val_num) as string) as val1,
-        '' as val2
-      ) structs
-  from
-    (
-      select
-        ntile(10) over (order by val) ntile_rank,
-        val_num
-      from
-        base_values
-    )
-  group by ntile_rank
-  union all
-  select
-    struct 
-      (
-        '{target_table_name}' as table_name,
-        '{target_column}' as column_name,
-        'ntile_without_error_min' as stat_name,
-        ntile_rank as num,
-        safe_cast(min(val) as string) as val1,
-        '' as val2
-      ) structs
-  from
-    (
-      select
-        ntile(10) over (order by val) ntile_rank,
-        val
-      from
-        base_values
-    )
-  group by ntile_rank
-  union all
-  select
-    struct 
-      (
-        '{target_table_name}' as table_name,
-        '{target_column}' as column_name,
-        'ntile_without_error_max' as stat_name,
-        ntile_rank as num,
-        safe_cast(max(val) as string) as val1,
-        '' as val2
-      ) structs
-  from
-    (
-      select
-        ntile(10) over (order by val_without_error) ntile_rank,
-        val_without_error val
-      from
-        base_values
-    )
-  group by ntile_rank
-)
-select 
-  * 
-from 
-  unnest
-  (
-    (
-      select
-        [
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'all_count' as stat_name,
-            0 as num,
-            safe_cast(count(1) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'distinct' as stat_name,
-            0 as num,
-            safe_cast(count(distinct val) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'max' as stat_name,
-            0 as num,
-            safe_cast(max(val) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'min' as stat_name,
-            0 as num,
-            safe_cast(min(val) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'avg' as stat_name,
-            0 as num,
-            safe_cast(avg(val_num) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'stddev' as stat_name,
-            0 as num,
-            safe_cast(stddev(val_num) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'num_zero' as stat_name,
-            0 as num,
-            safe_cast(countif(val_num = 0) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'num_null' as stat_name,
-            0 as num,
-            safe_cast(countif(val is null or nullif(safe_cast(val as string),'a') =  '') as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'max_without_error' as stat_name,
-            0 as num,
-            safe_cast(max(val_without_error) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'min_without_error' as stat_name,
-            0 as num,
-            safe_cast(min(val_without_error) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'error_higher_count' as stat_name,
-            0 as num,
-            safe_cast(countif(error_val_higher is not null) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'error_higher_max' as stat_name,
-            0 as num,
-            safe_cast(max(error_val_higher) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'error_higher_min' as stat_name,
-            0 as num,
-            safe_cast(min(error_val_higher) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'error_lower_count' as stat_name,
-            0 as num,
-            safe_cast(countif(error_val_lower is not null) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'error_lower_max' as stat_name,
-            0 as num,
-            safe_cast(max(error_val_lower) as string) as val1,
-            '' as val2
-          ),
-          struct
-          (
-            '{target_table_name}' as table_name,
-            '{target_column}' as column_name,
-            'error_lower_min' as stat_name,
-            0 as num,
-            safe_cast(min(error_val_lower) as string) as val1,
-            '' as val2
-          )
-        ]
-      from
-        base_values
-    )
-  )
-union all
-select 
-  structs.table_name,
-  structs.column_name,
-  structs.stat_name,
-  structs.num,
-  structs.val1,
-  structs.val2
-from 
-  freq_info
-union all
-select 
-  structs.table_name,
-  structs.column_name,
-  structs.stat_name,
-  structs.num,
-  structs.val1,
-  structs.val2
-from 
-  histogram_info
-union all
-select 
-  structs.table_name,
-  structs.column_name,
-  structs.stat_name,
-  structs.num,
-  structs.val1,
-  structs.val2
-from 
-  histogram_info_without_error
-"""
-schema_definition = [
-    {
-        "table_name":"a_bac",
-        "columns":
-            [
+import deep_impact_2_7.util as util
+import deep_impact_2_7.bq.dao.analyze_column as dao_analyze_column
+import deep_impact_2_7.bq.schema as bq_schema
+import deep_impact_2_7.bq.categories as categories
+import argparse
+import logging
+from apache_beam.io.gcp.bigquery import WriteToBigQuery
+from apache_beam.io.gcp.bigquery import BigQueryDisposition
+import apache_beam as beam
+from apache_beam.options.pipeline_options import PipelineOptions
+from apache_beam.options.pipeline_options import SetupOptions
+import deep_impact_2_7.bq.dao.analyze_column
+
+
+schema_definition = {
+    "a_bac":[
                 "race_key_place_code",
                 "race_key_year",
                 "race_key_no",
@@ -452,12 +49,9 @@ schema_definition = [
                 "sold_flag",
                 "win5flag",
                 "reserve",
-                "crlf",
+                "distributed_date",
             ]
-    },
-    {
-        "table_name":"a_kab",
-        "columns":
+    ,"a_kab":
             [
                 "held_key_place_code",
                 "held_key_year",
@@ -491,12 +85,9 @@ schema_definition = [
                 "freezing_avoidance",
                 "rain",
                 "reserve",
-                "crlf",
-            ]
-    },
-    {
-        "table_name":"a_kyi",
-        "columns":
+                "distributed_date",
+            ],
+    "a_kyi":
             [
                 "race_key_place_code",
                 "race_key_year",
@@ -632,12 +223,9 @@ schema_definition = [
                 "grazing_ranking",
                 "stable_rank",
                 "reserve_7",
-                "crlf"
-            ]
-    },
-    {
-        "table_name": "a_kza",
-        "columns":
+                "distributed_date"
+            ],
+    "a_kza":
             [
                 "jockey_code",
                 "register_delete_flag",
@@ -667,12 +255,9 @@ schema_definition = [
                 "total_obstacle_performance",
                 "data_date",
                 "reserve",
-                "crlf",
+                "distributed_date",
             ]
-    },
-    {
-        "table_name": "a_sed",
-        "columns":
+    ,"a_sed":
             [
                 "race_key_place_code",
                 "race_key_year",
@@ -756,12 +341,9 @@ schema_definition = [
                 "horse_pace_fluent",
                 "fourth_corner_catching",
                 "reserve_2",
-                "crlf",
-            ]
-    },
-    {
-        "table_name": "a_ukc",
-        "columns":
+                "distributed_date",
+            ],
+    "a_ukc":
             [
                 "register_no",
                 "horse_name",
@@ -784,43 +366,121 @@ schema_definition = [
                 "father_series_code",
                 "parent_series_code",
                 "reserve",
-                "crlf",
+                "distributed_date",
             ]
     }
+DataCharacteristicsQuery_column_pysical_name = 2
+DataCharacteristicsQuery_type = 8
 
-]
-client = bigquery.Client(project='yu-it-base')
-with codecs.open(r"C:\github\analysissummary.txt", "w", 'utf-8') as ws:
-    for table_schema in schema_definition:
-        table = table_schema["table_name"]
-#   飛ばしたいテーブルはここに書く
-#    if table not in ["a_sed"]:
-#        print "skip({table}".format(table= table)
-#        continue
-        with codecs.open(r"C:\github\analysis_{table}.txt".format(table=table),"w", 'utf-8') as w:
-            for column in table_schema["columns"]:
-                for round in range(5):
-                    try:
-                        current_q = sql.format(target_column=column, target_column_ambigous=column,
-                                               target_table_name=table)  # target_column_ambigous:キャストエラーが出ることあり
-                        query_job = client.run_sync_query(
-                            current_q)  # API request - starts the query
-                        query_job.run()
-                    except:
-                        print "processing(retry) {table}.{col}".format(col=column, table=table)
-                        current_q = sql.format(target_column=column, target_column_ambigous="safe_cast({column} as string)".format(column=column),
-                                               target_table_name=table)  # target_column_ambigous:キャストエラーが出ることあり
-                        query_job = client.run_sync_query(
-                            current_q)  # API request - starts the query
-                        query_job.run()
-                    print "{table}.{col}[round {round}] {rows} rows returned".format(col=column,table=table, round=round, rows = len(query_job.rows))
+DataCharacteristicsQuery_length = 5
+DataCharacteristicsQuery_start_position = 6
+DataCharacteristicsQuery_allow_zero = 9
+DataCharacteristicsQuery_illegal_value_definition = 10
+DataCharacteristicsQuery_illegal_value_condition = 11
+DataCharacteristicsQuery_original_translation = 12
 
-                    for row in query_job.rows:
-                        record = ",".join([unicode(row[i]) for i in range(6)])
-                        w.write(record)
-                        w.write("\n")
-                        ws.write(record)
-                        ws.write("\n")
-                    if len(query_job.rows) > 0:
-                        break
+#
+"""
+csvファイルとロード先テーブル名をもらってデータをロードする
+
+1.テーブル名をキーに
+　jrdb_raw_data_schema_info.data_charisticsをロードする。
+2.data_charisticsの桁数定義と型定義に従いデータを変換する
+3.ロードする
+4,独自変換があれば行う
+
+"""
+def analyze_column(table_column, characteristics):
+    table, column = table_column
+    column_characteristics = None
+    for c in characteristics:
+        if c.column_pysical_name == column:
+            column_characteristics = c
+
+    if column_characteristics.type not in [
+        categories.data_characteristics_type.real_value,
+        categories.data_characteristics_type.category,
+        categories.data_characteristics_type.datetime
+    ]:
+        return []
+    if column_characteristics.type in [
+        categories.data_characteristics_type.real_value,
+        categories.data_characteristics_type.datetime
+    ]:
+        ret = dao_analyze_column.query("jrdb_raw_data", table, column, 10)
+        return ret
+    else:
+        ret = dao_analyze_column.query("jrdb_raw_data", table, column, 300)
+        return ret
+
+
+def as_db_record(record):
+    return record._asdict()
+
+
+def run(dataset_name, table,schema_info_dataset_name, schema_info_table):
+    util.info("{dataset}.{table} analyze start".format(
+        dataset = dataset_name,
+        table = table ,
+        )
+    )
+    characteristics = bq_schema.get_data_charistics(dataset_name,table)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--output',
+                        dest='output',
+                        # CHANGE 1/5: The Google Cloud Storage path is required
+                        # for outputting the results.
+                        default="{dataset_name}.{table_name}".format(dataset_name=dataset_name, table_name=table ),
+                        help='Output file to write results to.')
+    known_args, pipeline_args = parser.parse_known_args()
+    pipeline_args.extend([
+        # CHANGE 2/5: (OPTIONAL) Change this to DataflowRunner to
+        # run your pipeline on the Google Cloud Dataflow Service.
+        '--runner=DataFlowRunner',
+        # CHANGE 3/5: Your project ID is required in order to run your pipeline on
+        # the Google Cloud Dataflow Service.
+        '--project=yu-it-base',
+        # CHANGE 4/5: Your Google Cloud Storage path is required for staging local
+        # files.
+        '--staging_location=gs://yu-it-base-temp/dataflow/staging',
+        # CHANGE 5/5: Your Google Cloud Storage path is required for temporary
+        # files.
+        '--temp_location=gs://yu-it-base-temp/dataflow/temp',
+        '--job_name=analyze-{table_name}'.format(table_name=table .replace("_", "-")),
+        '--setup_file=C:\github\deep_impact_2_7\setup.py'
+    ])
+
+    pipeline_options = PipelineOptions(pipeline_args)
+    pipeline_options.view_as(SetupOptions).save_main_session = True
+
+    table_columns = [(table, column) for column in schema_definition[table]]
+
+    with beam.Pipeline(options=pipeline_options) as p:
+        lines = (p
+                 | beam.Create(
+                    table_columns))
+
+        records = (
+            lines
+            | 'Analyze' >> (beam.FlatMap(lambda x : analyze_column(x, characteristics)))
+            | 'AsDBRecord' >> (beam.Map(lambda x: x._asdict()))
+        )
+        records | WriteToBigQuery(schema_info_table,schema_info_dataset_name,"yu-it-base"
+                                  ,write_disposition=BigQueryDisposition.WRITE_TRUNCATE
+                                  )
+        #records | WriteToText("#local\\out\\analyze_{table_name}.txt".format(table_name=table))
+
+    pass
+
+if __name__ == '__main__':
+    logging.getLogger().setLevel(logging.INFO)
+    dataset_name="jrdb_raw_data"
+    table_name="a_sed"
+    statistics_dataset_name="jrdb_raw_data_schema_info"
+    statistics_table_name="a_sed"
+
+
+#filter_terms = p | beam.io.ReadFromText("gs://deep_impact/assets/jrdb/auth_info.txt")
+run(dataset_name, "a_bac", "jrdb_raw_data_schema_info", "a_bac_statistics")
+#
 

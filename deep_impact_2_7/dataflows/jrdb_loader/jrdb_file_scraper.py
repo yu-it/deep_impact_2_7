@@ -1,6 +1,6 @@
 # -*-coding:utf-8-*-
 
-import deep_impact_2_7.dataflows.util as util
+import deep_impact_2_7.util as util
 import re
 import urllib2
 from html.parser import HTMLParser
@@ -96,7 +96,7 @@ def expand_zip2bytearray(table_name,entry, from_date, to_date,user_id,password):
     table_name = cleansing_table_name(table_name)
     ret = []
     url = entry
-    for file_name, byte_seq in util.extract_zip_file_entry(bytearray(http_get_from_jrdb(url,(user_id,password)))):
+    for file_name, byte_seq in util.extract_zip_file_entry(bytearray(http_get_from_jrdb(url, (user_id, password)))):
         date = file_name2date_string(file_name)
         if from_date <= date and date <= to_date and table_name in file_name.lower():
             ret.append((datetime.datetime.strptime(file_name2date_string(file_name), '%Y%m%d').strftime('%Y-%m-%d'),byte_seq))

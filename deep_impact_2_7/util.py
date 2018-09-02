@@ -53,7 +53,11 @@ def extract_zip_file_entry(byte_seq):
 
 def debug(str):
     pass
-    #print str
+    print str
 def alert(str):
+    pass
+    print str
+
+def info(str):
     pass
     print str

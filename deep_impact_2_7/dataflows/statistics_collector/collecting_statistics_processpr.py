@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import deep_impact_2_7.util as util
 import deep_impact_2_7.bq.dao.analyze_column as dao_analyze_column
-import deep_impact_2_7.bq.schema as bq_schema
+import deep_impact_2_7.bq.schemaUtil as bq_schema
 import deep_impact_2_7.bq.categories as categories
+import deep_impact_2_7.bq.layout.jrdb_raw_data_schema_info.schema as schema
 import argparse
 import logging
 from apache_beam.io.gcp.bigquery import WriteToBigQuery
+from apache_beam.io import WriteToText
 from apache_beam.io.gcp.bigquery import BigQueryDisposition
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
@@ -371,6 +373,12 @@ schema_definition = {
     }
 DataCharacteristicsQuery_column_pysical_name = 2
 DataCharacteristicsQuery_type = 8
+schema_definition = {
+    "a_bac":[
+                "date",
+                "race_condition_distance",
+            ]
+    }
 
 DataCharacteristicsQuery_length = 5
 DataCharacteristicsQuery_start_position = 6
@@ -418,44 +426,21 @@ def as_db_record(record):
     return record._asdict()
 
 
-def run(dataset_name, table,schema_info_dataset_name, schema_info_table):
+#def run(dataset_name, table,schema_info_dataset_name, schema_info_table):
+def run(pipeline_parameters):
+
     util.info("{dataset}.{table} analyze start".format(
-        dataset = dataset_name,
-        table = table ,
+        dataset = pipeline_parameters.dataset_name,
+        table = pipeline_parameters.table_name ,
         )
     )
-    characteristics = bq_schema.get_data_charistics(dataset_name,table)
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--output',
-                        dest='output',
-                        # CHANGE 1/5: The Google Cloud Storage path is required
-                        # for outputting the results.
-                        default="{dataset_name}.{table_name}".format(dataset_name=dataset_name, table_name=table ),
-                        help='Output file to write results to.')
-    known_args, pipeline_args = parser.parse_known_args()
-    pipeline_args.extend([
-        # CHANGE 2/5: (OPTIONAL) Change this to DataflowRunner to
-        # run your pipeline on the Google Cloud Dataflow Service.
-        '--runner=DataFlowRunner',
-        # CHANGE 3/5: Your project ID is required in order to run your pipeline on
-        # the Google Cloud Dataflow Service.
-        '--project=yu-it-base',
-        # CHANGE 4/5: Your Google Cloud Storage path is required for staging local
-        # files.
-        '--staging_location=gs://yu-it-base-temp/dataflow/staging',
-        # CHANGE 5/5: Your Google Cloud Storage path is required for temporary
-        # files.
-        '--temp_location=gs://yu-it-base-temp/dataflow/temp',
-        '--job_name=analyze-{table_name}'.format(table_name=table .replace("_", "-")),
-        '--setup_file=C:\github\deep_impact_2_7\setup.py'
-    ])
+    characteristics = bq_schema.get_data_charistics(pipeline_parameters.dataset_name, pipeline_parameters.table_name)
 
-    pipeline_options = PipelineOptions(pipeline_args)
-    pipeline_options.view_as(SetupOptions).save_main_session = True
+    pipeline_parameters.view_as(SetupOptions).save_main_session = True
 
-    table_columns = [(table, column) for column in schema_definition[table]]
+    table_columns = [(pipeline_parameters.table_name, column) for column in schema_definition[pipeline_parameters.table_name]]
 
-    with beam.Pipeline(options=pipeline_options) as p:
+    with beam.Pipeline(options=pipeline_parameters) as p:
         lines = (p
                  | beam.Create(
                     table_columns))
@@ -463,12 +448,20 @@ def run(dataset_name, table,schema_info_dataset_name, schema_info_table):
         records = (
             lines
             | 'Analyze' >> (beam.FlatMap(lambda x : analyze_column(x, characteristics)))
-            | 'AsDBRecord' >> (beam.Map(lambda x: x._asdict()))
+            | 'AsDBRecord' >> (beam.Map(lambda x: as_db_record(x)))
         )
-        records | WriteToBigQuery(schema_info_table,schema_info_dataset_name,"yu-it-base"
-                                  ,write_disposition=BigQueryDisposition.WRITE_TRUNCATE
-                                  )
-        #records | WriteToText("#local\\out\\analyze_{table_name}.txt".format(table_name=table))
+#        records | WriteToBigQuery(pipeline_options.result_table_name,pipeline_options.result_dataset,"yu-it-base",schema=bq_schema.as_table_schema_object(schema.statistics_collector)
+#                                  ,create_disposition=BigQueryDisposition.CREATE_IF_NEEDED,write_disposition=BigQueryDisposition.WRITE_TRUNCATE
+#                                  )
+        if pipeline_parameters.location == "local":
+            records | WriteToText("C:\github\deep_impact_2_7\deep_impact_2_7\dataflows\statistics\#local\out\\analyzez_{table_name}.txt".format(table_name=pipeline_parameters.result_table_name))
+        else:
+            records | WriteToBigQuery(pipeline_parameters.result_table_name, pipeline_parameters.result_dataset, "yu-it-base"
+                                      ,schema=bq_schema.as_simple_table_schema_expression(schema.statistics)
+                                      , create_disposition=BigQueryDisposition.CREATE_IF_NEEDED,
+                                      write_disposition=BigQueryDisposition.WRITE_TRUNCATE
+                                      )
+
 
     pass
 
@@ -480,7 +473,7 @@ if __name__ == '__main__':
     statistics_table_name="a_sed"
 
 
-#filter_terms = p | beam.io.ReadFromText("gs://deep_impact/assets/jrdb/auth_info.txt")
-run(dataset_name, "a_bac", "jrdb_raw_data_schema_info", "a_bac_statistics")
-#
+    #filter_terms = p | beam.io.ReadFromText("gs://deep_impact/assets/jrdb/auth_info.txt")
+    run(dataset_name, "a_bac", "jrdb_raw_data_schema_info", "a_bac_statistics")
+    #
 

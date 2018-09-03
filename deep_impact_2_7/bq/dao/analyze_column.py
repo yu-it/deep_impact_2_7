@@ -5,7 +5,7 @@ import deep_impact_2_7.util as util
 import collections
 
 
-statistics = collections.namedtuple("statistics", [
+statistics = collections.namedtuple("statistics_collector", [
                         "table_name",
                         "column_name",
                         "stat_name",

@@ -36,4 +36,3 @@ def get_data_charistics(dataset_name, table_name, column_name = None):
             "record_length": chars[0][DataCharacteristicsQuery_record_length]}
 
 
-

@@ -15,7 +15,7 @@ csvファイルとロード先テーブル名をもらってデータをロー�
 import argparse
 import logging
 from apache_beam.io.gcp.bigquery import BigQueryDisposition
-from deep_impact_2_7.bq.schema import get_data_charistics
+from deep_impact_2_7.bq.schemaUtil import get_data_charistics
 import deep_impact_2_7.bq.categories as categories
 
 import deep_impact_2_7.bq.dao.get_auth_info as get_auth_info
@@ -107,9 +107,16 @@ def get_last_distributed_date(table_name):
     return from_date
 
 
-def run(dataset_name, table_name, from_date, to_date,truncate = False):
+#def run(dataset_name, table_name, from_date, to_date,truncate = False):
+def run(pipeline_parameter):
+    dataset = pipeline_parameter.dataset_name.get()
+    table_name = pipeline_parameter.table_name.get()
+    location = pipeline_parameter.location.get()
+    from_date = pipeline_parameter.from_date.get()
+    to_date = pipeline_parameter.to_date.get()
+
     util.info("{dataset}.{table}({from_date} to {to_date}) load start".format(
-        dataset = dataset_name,
+        dataset = dataset_name.get(),
         table = table_name,
         from_date = from_date,
         to_date = to_date)
@@ -118,43 +125,19 @@ def run(dataset_name, table_name, from_date, to_date,truncate = False):
     #characteristics = bq.get_data_charistics(dataset_name, table_name)
     characteristics = get_data_charistics(dataset_name, table_name)
     auth_data = get_auth_info.query()
-    if from_date is None:
+    if from_date is None or from_date == "":
         from_date = get_last_distributed_date(table_name)
         truncate = True
-    if to_date is None:
+    else:
+        truncate = False
+    if to_date is None or to_date == "":
         to_date = "99999999"
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--output',
-                        dest='output',
-                        # CHANGE 1/5: The Google Cloud Storage path is required
-                        # for outputting the results.
-                        default="{dataset_name}.{table_name}".format(dataset_name=dataset_name,table_name=table_name),
-                        help='Output file to write results to.')
-    known_args, pipeline_args = parser.parse_known_args()
-    pipeline_args.extend([
-        # CHANGE 2/5: (OPTIONAL) Change this to DataflowRunner to
-        # run your pipeline on the Google Cloud Dataflow Service.
-        '--runner=DataFlowRunner',
-        # CHANGE 3/5: Your project ID is required in order to run your pipeline on
-        # the Google Cloud Dataflow Service.
-        '--project=yu-it-base',
-        # CHANGE 4/5: Your Google Cloud Storage path is required for staging local
-        # files.
-        '--staging_location=gs://yu-it-base-temp/dataflow/staging',
-        # CHANGE 5/5: Your Google Cloud Storage path is required for temporary
-        # files.
-        '--temp_location=gs://yu-it-base-temp/dataflow/temp',
-        '--job_name={table_name}-{fromdate}-to-{todate}'.format(table_name=table_name.replace("_","-"), fromdate= from_date, todate=to_date),
-        '--setup_file=C:\github\deep_impact_2_7\setup.py'
-    ])
-
-    pipeline_options = PipelineOptions(pipeline_args)
-    pipeline_options.view_as(SetupOptions).save_main_session = True
+    pipeline_parameter.view_as(SetupOptions).save_main_session = True
 
 
     requests = scraper.scraping_request(table_name, from_date, to_date)
     jrdb_auth_info = scraper.jrdb_auth_info(auth_data.user_name, auth_data.password)
-    with beam.Pipeline(options=pipeline_options) as p:
+    with beam.Pipeline(options=pipeline_parameter) as p:
         lines = (p
                  | beam.Create(
                     requests))
@@ -167,30 +150,28 @@ def run(dataset_name, table_name, from_date, to_date,truncate = False):
             | 'MapToColumns' >> (beam.Map(lambda x: map_to_record(x, characteristics)))
 
         )
-        if truncate:
-            records | WriteToBigQuery(table_name, dataset_name, "yu-it-base"
-                                      , write_disposition=BigQueryDisposition.WRITE_TRUNCATE
-                                      )
-            pass
+        if location == "local":
+            records | WriteToText("#local\\out\\testx_{table_name}.txt".format(table_name=table_name))
         else:
-            records | WriteToBigQuery(table_name, dataset_name, "yu-it-base")
-            pass
-        #
-        """
-        records | WriteToText("#local\\out\\test_{table_name}.txt".format(table_name=table_name))
-        """
+            if truncate:
+                records | WriteToBigQuery(table_name, dataset_name, "yu-it-base"
+                                          , write_disposition=BigQueryDisposition.WRITE_TRUNCATE
+                                          )
+                pass
+            else:
+                records | WriteToBigQuery(table_name, dataset_name, "yu-it-base")
+                pass
 
     pass
 
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
     dataset_name="jrdb_raw_data"
-    table_name="a_sed"
     from_date = "20180504"
     to_date = "20180604"
 
 
-#filter_terms = p | beam.io.ReadFromText("gs://deep_impact/assets/jrdb/auth_info.txt")
-print "注意:kza(マスタ)は全量取り込み時しか取り込みされません"
-run(dataset_name, "a_bac", None, None)
-#
+    #filter_terms = p | beam.io.ReadFromText("gs://deep_impact/assets/jrdb/auth_info.txt")
+    print "注意:kza(マスタ)は全量取り込み時しか取り込みされません"
+    run(dataset_name, "a_bac", from_date, to_date)
+    #

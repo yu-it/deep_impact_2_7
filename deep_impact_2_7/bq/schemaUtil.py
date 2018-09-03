@@ -1,5 +1,8 @@
 import deep_impact_2_7.bq.bq as bq
 import collections
+import json
+from google.cloud.bigquery.schema import SchemaField
+
 
 DataCharisticsQuery = """
 #standardSQL
@@ -34,5 +37,9 @@ def get_data_charistics(dataset_name, table_name, column_name = None):
     return chars
 
 
-def truncate_table(dataset_name, table_name):
-    bq.sele
+def as_table_schema_object(schema):
+    schema_obj =  [SchemaField(entry["name"],entry["type"]) for entry in json.loads(schema)]
+    return schema_obj
+def as_simple_table_schema_expression(schema):
+    schema_obj =  ",".join(["{name}:{type}".format(name = entry["name"],type = entry["type"]) for entry in json.loads(schema)])
+    return schema_obj

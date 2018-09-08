@@ -9,22 +9,26 @@ import collections
 url_pattern = "http://www.jrdb.com/member/datazip/{table}/{path}"
 url_master_index = "http://www.jrdb.com/member/data/"
 
-scraping_request = collections.namedtuple("scraping_request", [
-                        "table_name",
-                        "from_date",
-                        "to_date"
-            ])
+class scraping_request:
+    def __init__(self,a0,a1,a2):
+        self.table_name=a0
+        self.from_date = a1
+        self.to_date=a2
+
+
 zip_file_data = collections.namedtuple("zip_file_data", [
                         "file_name",
                         "byte_seq"
-            ])
+])
 jrdb_auth_info = collections.namedtuple("jrdb_auth_info", [
                         "user_name",
                         "password"
                     ])
 
 zipfile_link_info = collections.namedtuple("zipfile_link_info", [
-                        "request",
+                        "table_name",
+                        "from_date",
+                        "to_date",
                         "url"
                     ])
 class JrdbParser(HTMLParser):
@@ -81,10 +85,11 @@ def get_all_zipfile_links(table_name,auth_data):
             raise ex
     return parser.list_of_year_packs, parser.list_of_links
 
-def get_zipfile_links(request,auth_data):
-    list_of_year_packs, list_of_links = get_all_zipfile_links(request.table_name,auth_data)
-    from_year = request.from_date[0:4]
-    to_year = request.to_date[0:4]
+#transform (table,from, to) to (table, from, to, url
+def get_zipfile_links(table_name, from_date, to_date, auth_data):
+    list_of_year_packs, list_of_links = get_all_zipfile_links(table_name,auth_data)
+    from_year = from_date[0:4]
+    to_year = to_date[0:4]
     ret = []
     year_packs = []
 
@@ -93,14 +98,14 @@ def get_zipfile_links(request,auth_data):
         year_packs.append(year)
         if from_year <= year and year <= to_year:
 
-            ret.append(zipfile_link_info(request,url))
+            ret.append(zipfile_link_info(table_name, from_date, to_date ,url))
 
     #週次パックから抽出
     for date,url in list_of_links:
         if date[0:4] in year_packs:
             continue
-        if request.from_date <= date and date <= request.to_date:
-            ret.append(zipfile_link_info(request,url))
+        if from_date <= date and date <= to_date:
+            ret.append(zipfile_link_info(table_name, from_date, to_date ,url))
     return ret
 
 def file_name2date_string(file_name):
@@ -111,16 +116,17 @@ def file_name2date_string(file_name):
     date_string = file_name[3:3 + 6]
     return  (("19" if date_string[0:1] == "9" else "20") + date_string)
 
-
-
-def expand_zip2bytearray(link_info,auth_info):
-    table_name = cleansing_table_name(link_info.request.table_name)
+#transform (table_name, from_date, to_date, url) to (date, byte_seq)
+def expand_zip2bytearray(table_name, from_date, to_date, url, auth_info):
+    table_name = cleansing_table_name(table_name)
     ret = []
 
-    for file_name, byte_seq in util.extract_zip_file_entry(bytearray(http_get_from_jrdb(link_info.url, auth_info))):
+    for file_name, byte_seq in util.extract_zip_file_entry(bytearray(http_get_from_jrdb(url, auth_info))):
         date = file_name2date_string(file_name)
-        if link_info.request.from_date <= date and date <= link_info.request.to_date and table_name in file_name.lower():
-            ret.append(zip_file_data(datetime.datetime.strptime(file_name2date_string(file_name), '%Y%m%d').strftime('%Y-%m-%d'),byte_seq))
+        if from_date <= date and date <= to_date and table_name in file_name.lower():
+            ret.append(zip_file_data(
+                datetime.datetime.strptime(file_name2date_string(file_name), '%Y%m%d').strftime('%Y-%m-%d'),
+                byte_seq))
     return ret
 
 def get_jrdb_data(table_name, from_date, to_date,user_id,password):

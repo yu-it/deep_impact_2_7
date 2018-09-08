@@ -16,6 +16,7 @@ import argparse
 import logging
 from apache_beam.io.gcp.bigquery import BigQueryDisposition
 from deep_impact_2_7.bq.schemaUtil import get_data_charistics
+
 import deep_impact_2_7.bq.categories as categories
 
 import deep_impact_2_7.bq.dao.get_auth_info as get_auth_info
@@ -33,145 +34,150 @@ from deep_impact_2_7.bq import bq
 import deep_impact_2_7.util as util
 import collections
 
-DataCharacteristicsQuery_column_pysical_name = 2
-DataCharacteristicsQuery_length = 5
-DataCharacteristicsQuery_start_position = 6
-DataCharacteristicsQuery_type = 8
-DataCharacteristicsQuery_allow_zero = 9
-DataCharacteristicsQuery_illegal_value_definition = 10
-DataCharacteristicsQuery_illegal_value_condition = 11
-DataCharacteristicsQuery_original_translation = 12
 
 
-def file_to_recordset(data_entry,record_length):
-    records = [(data_entry.file_name,data_entry.byte_seq[idx * record_length : (1 + idx) * record_length]) for idx in range(len(data_entry.byte_seq) / record_length)]
-    return records
+class jrdb_loader_parameter:
+    def __init__(self, from_date,to_date):
+        self.from_date = from_date
+        self.to_date = to_date
 
+class abstract_data_loader(object):
+    def __init__ (self, dataset_name, table_name):
+        self.dataset_name = dataset_name
+        self.table_name = table_name
+        self.truncate = False
+        self.characteristics = get_data_charistics(dataset_name, table_name)
+        self.auth_data = get_auth_info.query()
+        #self.max_from_date = self.get_last_distributed_date(table_name)
+        self.is_local = True
 
-def special_translation(table_name,column_name, value):
-    pass
-
-def convert_to_datetime(column_value,type_detail):
-
-    if len(column_value) == 4 and type_detail == categories.data_characteristics_type.datetime:
-        return str(datetime.datetime(int(column_value),1,1))
-
-    if len(column_value) == 4 and type_detail == categories.data_characteristics_type.time:
-        return str(datetime.datetime(1990, 1, 1,int(column_value[0:2]),int(column_value[2:4])))
-
-    if len(column_value) == 8 and type_detail == categories.data_characteristics_type.datetime:
-        return str(datetime.datetime(int(column_value[0:4]),int(column_value[4:6]),int(column_value[6:8])))
-
-def map_to_record(recordentry, charistics):
-    derive_from = recordentry[0]
-    recordstring = recordentry[1]
-    record = {}
-    for idx,entry in enumerate(charistics[0:-1]):
-
-        util.debug("No{idx} position:{x}-{y}".format(
-            idx = idx,
-            x = entry.start_position - 1,
-            y = (entry.start_position + entry.length) - 1))
-        try:
-            column_value = str.decode(
-                recordstring[
-                    entry.start_position - 1
-                    :
-                    (entry.start_position + entry.length) - 1
-                ], "ms932"
-            ).strip()
-            if entry.type in (categories.data_characteristics_type.datetime, categories.data_characteristics_type.time):
-                column_value = convert_to_datetime(column_value,entry.type)
-            if entry.original_translation <> u"":
-                column_value = eval(entry.original_translation,{"x":column_value})
-            if entry.allow_zero == u"0" and column_value == "0":
-                column_value = ""
-            if entry.illegal_value_condition <> u"" and eval(
-                    entry.illegal_value_condition,{"x":column_value}):
-                column_value = ""
-
-        except Exception as ex:
-            column_value = "-"
-            util.alert("detect {exname} at No{idx} position:{x}-{y},sequence:{seq}".format(exname=str(ex), idx = idx, x =entry[6] - 1, y =(entry[6] + entry[5]) - 1, seq=recordstring[entry[6] - 1:(entry[6] + entry[5]) - 1]))
-        record.update({entry.column_pysical_name:column_value})
-
-    record.update({"distributed_date":derive_from})
-    return record
-
-def get_last_distributed_date(table_name):
-    from_date = dao_get_last_distributed_date.query(table_name)
-    if from_date is None:
-        from_date = "19900101"
-    else:
-        from_date = (from_date + datetime.timedelta(days=1)).strftime('%Y%m%d')
-    return from_date
-
-
-#def run(dataset_name, table_name, from_date, to_date,truncate = False):
-def run(pipeline_parameter):
-    dataset = pipeline_parameter.dataset_name.get()
-    table_name = pipeline_parameter.table_name.get()
-    location = pipeline_parameter.location.get()
-    from_date = pipeline_parameter.from_date.get()
-    to_date = pipeline_parameter.to_date.get()
-
-    util.info("{dataset}.{table}({from_date} to {to_date}) load start".format(
-        dataset = dataset_name.get(),
-        table = table_name,
-        from_date = from_date,
-        to_date = to_date)
-    )
-
-    #characteristics = bq.get_data_charistics(dataset_name, table_name)
-    characteristics = get_data_charistics(dataset_name, table_name)
-    auth_data = get_auth_info.query()
-    if from_date is None or from_date == "":
-        from_date = get_last_distributed_date(table_name)
-        truncate = True
-    else:
-        truncate = False
-    if to_date is None or to_date == "":
-        to_date = "99999999"
-    pipeline_parameter.view_as(SetupOptions).save_main_session = True
-
-
-    requests = scraper.scraping_request(table_name, from_date, to_date)
-    jrdb_auth_info = scraper.jrdb_auth_info(auth_data.user_name, auth_data.password)
-    with beam.Pipeline(options=pipeline_parameter) as p:
-        lines = (p
-                 | beam.Create(
-                    requests))
-        # Count the occurrences of each word.
-        records = (
-            lines
-            | 'ScrapingZipFile' >> (beam.FlatMap(lambda x : scraper.get_zipfile_links(requests,jrdb_auth_info )))
-            | 'RetrieveData' >> (beam.FlatMap(lambda x : scraper.expand_zip2bytearray(x, jrdb_auth_info)))
-            | 'FileToRecordSequence' >> (beam.FlatMap(lambda x: file_to_recordset(x,characteristics[0].record_length)))
-            | 'MapToColumns' >> (beam.Map(lambda x: map_to_record(x, characteristics)))
-
-        )
-        if location == "local":
-            records | WriteToText("#local\\out\\testx_{table_name}.txt".format(table_name=table_name))
+    def get_last_distributed_date(self, table_name):
+        from_date = dao_get_last_distributed_date.query(table_name)
+        if from_date is None:
+            from_date = "19900101"
         else:
-            if truncate:
-                records | WriteToBigQuery(table_name, dataset_name, "yu-it-base"
-                                          , write_disposition=BigQueryDisposition.WRITE_TRUNCATE
-                                          )
-                pass
+            from_date = (from_date + datetime.timedelta(days=1)).strftime('%Y%m%d')
+        return from_date
+
+    def file_to_recordset(self, file_name, byte_seq, record_length):
+        records = [(file_name,byte_seq[idx * record_length : (1 + idx) * record_length]) for idx in range(len(byte_seq) / record_length)]
+        return records
+
+
+    def special_translation(self, table_name,column_name, value):
+        pass
+
+    def convert_to_datetime(self, column_value,type_detail):
+
+        if len(column_value) == 4 and type_detail == categories.data_characteristics_type.datetime:
+            return str(datetime.datetime(int(column_value),1,1))
+
+        if len(column_value) == 4 and type_detail == categories.data_characteristics_type.time:
+            return str(datetime.datetime(1990, 1, 1,int(column_value[0:2]),int(column_value[2:4])))
+
+        if len(column_value) == 8 and type_detail == categories.data_characteristics_type.datetime:
+            return str(datetime.datetime(int(column_value[0:4]),int(column_value[4:6]),int(column_value[6:8])))
+
+    def map_to_record(self, recordentry, charistics):
+        derive_from = recordentry[0]
+        recordstring = recordentry[1]
+        record = {}
+        for idx,entry in enumerate(charistics[0:-1]):
+
+            util.debug("No{idx} position:{x}-{y}".format(
+                idx = idx,
+                x = entry.start_position - 1,
+                y = (entry.start_position + entry.length) - 1))
+            try:
+                column_value = str.decode(
+                    recordstring[
+                        entry.start_position - 1
+                        :
+                        (entry.start_position + entry.length) - 1
+                    ], "ms932"
+                ).strip()
+                if entry.type in (categories.data_characteristics_type.datetime, categories.data_characteristics_type.time):
+                    column_value = self.convert_to_datetime(column_value,entry.type)
+                if entry.original_translation <> u"":
+                    column_value = eval(entry.original_translation,{"x":column_value})
+                if entry.allow_zero == u"0" and column_value == "0":
+                    column_value = ""
+                if entry.illegal_value_condition <> u"" and eval(
+                        entry.illegal_value_condition,{"x":column_value}):
+                    column_value = ""
+
+            except Exception as ex:
+                column_value = "-"
+                util.alert("detect {exname} at No{idx} position:{x}-{y},sequence:{seq}".format(exname=str(ex), idx = idx, x =entry[6] - 1, y =(entry[6] + entry[5]) - 1, seq=recordstring[entry[6] - 1:(entry[6] + entry[5]) - 1]))
+            record.update({entry.column_pysical_name:column_value})
+
+        record.update({"distributed_date":derive_from})
+        return record
+
+
+
+    def init_param(self, from_date, to_date):
+        from_date = from_date.get() if from_date.get() is not None else self.get_last_distributed_date(self.table_name)
+        to_date = to_date.get() if to_date.get() is not None else '99999999'
+        if from_date == "00000000":
+            self.truncate = True
+        util.info("load to {tab} from {from_date} to {to_date}, truncate {trunc}".format(tab = self.table_name, from_date = from_date, to_date = to_date,trunc = self.truncate))
+        return jrdb_loader_parameter(
+            from_date,
+            to_date
+        )
+    def run(self, pipeline_parameter):
+
+        google_cloud_options = pipeline_parameter.view_as(beam.options.pipeline_options.GoogleCloudOptions)
+
+        param = jrdb_loader_parameter(pipeline_parameter.from_date, pipeline_parameter.to_date)
+        util.debug("setup pipeline")
+        with beam.Pipeline(options=pipeline_parameter) as p:
+            lines = (p
+                     | beam.Create(
+                        [param]))
+            # Count the occurrences of each word.
+            #characteristics などをInitParamに入れた
+
+            records = (
+                lines
+                | 'InitParam' >> (beam.Map(lambda x : self.init_param(x.from_date, x.to_date)))
+                #| 'SetFromDateToDate' >> (beam.Map(lambda x : expand_params(x)))
+                | 'ScrapingZipFile' >> (beam.FlatMap(lambda x : scraper.get_zipfile_links(self.table_name, x.from_date, x.to_date, self.auth_data)))
+                | 'RetrieveData' >> (beam.FlatMap(lambda x : scraper.expand_zip2bytearray(x.table_name, x.from_date, x.to_date, x.url, self.auth_data )))
+                | 'FileToRecordSequence' >> (beam.FlatMap(lambda x: self.file_to_recordset(x.file_name, x.byte_seq,self.characteristics[0].record_length)))
+                | 'MapToColumns' >> (beam.Map(lambda x: self.map_to_record(x, self.characteristics)))
+            )
+            util.debug("exec pipeline")
+            if self.is_local:
+                records | WriteToText("#local\out\\testx_{table_name}.txt".format(table_name=self.table_name))
             else:
-                records | WriteToBigQuery(table_name, dataset_name, "yu-it-base")
-                pass
+                if self.truncate:
+                    records | WriteToBigQuery(self.table_name, self.dataset_name, "yu-it-base"
+                                              , write_disposition=BigQueryDisposition.WRITE_TRUNCATE
+                                              )
+                    pass
+                else:
+                    records | WriteToBigQuery(self.table_name, self.dataset_name, "yu-it-base")
+                    pass
 
-    pass
+        pass
 
-if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.INFO)
-    dataset_name="jrdb_raw_data"
-    from_date = "20180504"
-    to_date = "20180604"
-
-
-    #filter_terms = p | beam.io.ReadFromText("gs://deep_impact/assets/jrdb/auth_info.txt")
-    print "注意:kza(マスタ)は全量取り込み時しか取り込みされません"
-    run(dataset_name, "a_bac", from_date, to_date)
-    #
+class a_bac_loader(abstract_data_loader):
+    def __init__(self):
+        super(a_bac_loader, self).__init__("jrdb_raw_data", "a_bac")
+class a_kab_loader(abstract_data_loader):
+    def __init__(self):
+        super(a_kab_loader, self).__init__("jrdb_raw_data", "a_kab")
+class a_kza_loader(abstract_data_loader):
+    def __init__(self):
+        super(a_kza_loader, self).__init__("jrdb_raw_data", "a_kza")
+class a_kyi_loader(abstract_data_loader):
+    def __init__(self):
+        super(a_kyi_loader, self).__init__("jrdb_raw_data", "a_kyi")
+class a_sed_loader(abstract_data_loader):
+    def __init__(self):
+        super(a_sed_loader, self).__init__("jrdb_raw_data", "a_sed")
+class a_ukc_loader(abstract_data_loader):
+    def __init__(self):
+        super(a_ukc_loader, self).__init__("jrdb_raw_data", "a_ukc")

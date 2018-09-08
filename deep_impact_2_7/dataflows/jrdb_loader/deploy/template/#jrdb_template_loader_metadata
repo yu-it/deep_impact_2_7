@@ -1,0 +1,21 @@
+{
+  "name": "jrdb_loader",
+  "description": "@template@データをロードする。.",
+  "parameters": [
+  {
+    "name": "from_date",
+    "label": "from_date",
+    "help_text": "from_date, 00000000: truncate, 99999999: difference",
+    "regexes": [".+"],
+    "is_optional": true
+  },
+  {
+    "name": "to_date",
+    "label": "to_date",
+    "help_text": "to_date if all, 99999999",
+    "regexes": [".+"],
+    "is_optional": true
+  }
+  ]
+
+}

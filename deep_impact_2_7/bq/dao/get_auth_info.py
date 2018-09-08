@@ -11,7 +11,8 @@ auth_info = collections.namedtuple("auth_info", [
                     ])
 
 def query():
-    return bq.selectFromBq(auth_info, sql)[0]  # target_column_ambigous:キャストエラーが出ることあり
+    records = bq.selectFromBq(auth_info, sql)
+    return records[0]
 
 sql = """
 #standardsql

@@ -13,7 +13,7 @@ DataCharisticsColumnSpecifiedQuery = """
 select sum(length) over (partition by null) + 2 record_length, c.* from jrdb_raw_data_schema_info.data_characteristics c where table_name = '{table_name}' and column_pysical_name = '{column_name}' order by seq
 """
 
-data_charistics_dto = collections.namedtuple("data_characteristics", [
+data_charistics_dto = collections.namedtuple("data_characteristics_dto", [
     "record_length",
     "table_name",
     "column_pysical_name",
@@ -29,12 +29,10 @@ data_charistics_dto = collections.namedtuple("data_characteristics", [
     "original_translation"
 ])
 
-
 def get_data_charistics(dataset_name, table_name, column_name = None):
 
-    chars = bq.selectFromBq(data_charistics_dto, DataCharisticsQuery.format(table_name=table_name)) if column_name is None else \
+    return bq.selectFromBq(data_charistics_dto, DataCharisticsQuery.format(table_name=table_name)) if column_name is None else \
         bq.selectFromBq(data_charistics_dto ,DataCharisticsColumnSpecifiedQuery.format(table_name=table_name, column_name=column_name))
-    return chars
 
 
 def as_table_schema_object(schema):

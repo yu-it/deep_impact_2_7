@@ -1,0 +1,7 @@
+{
+  "name": "statistics_collector",
+  "description": "テーブルの統計を取る",
+  "parameters": [
+  ]
+
+}

@@ -5,3 +5,7 @@ class data_characteristics_type:
     category = u"カテゴリ"
     datetime = u"日時"
     time = u"時刻"
+    exchange = {u"実数":"real",
+    u"カテゴリ":"category",
+    u"日時":"datetime",
+    u"時刻":"time"}

@@ -118,10 +118,12 @@ statistics = '''
 [
     {"name":"table_name","type":"string", "mode":"nullable"},
     {"name":"column_name","type":"string", "mode":"nullable"},
+    {"name":"column_type","type":"string", "mode":"nullable"},
     {"name":"stat_name","type":"string", "mode":"nullable"},
     {"name":"num","type":"integer", "mode":"nullable"},
     {"name":"val1","type":"string", "mode":"nullable"},
-    {"name":"val2","type":"string", "mode":"nullable"}
+    {"name":"val2","type":"string", "mode":"nullable"},
+    {"name":"note","type":"string", "mode":"nullable"}
 ]
 
 '''

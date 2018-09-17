@@ -2,7 +2,7 @@
 import logging
 import zlib
 import os
-
+import datetime
 ZipFileVariableLengthFileldStartPosition = 30
 ZipFileExtFieldLengthFieldSize = 2
 ZipFileExtFieldLengthOffset = 0x1c
@@ -54,12 +54,23 @@ def extract_zip_file_entry(byte_seq):
 
 def debug(str):
     pass
-    if os.name == "nt":
-        print str
 def alert(str):
     pass
     #print str
+    #logging.info("【deep_impact_alert】" + str)
 
 def info(str):
     pass
     logging.info ("【deep_impact】" + str)
+
+def to_logical_held_date(strings):
+    year = strings[2:4]
+    no = strings[4:5]
+    day = strings[5:6]
+    if year[0:1] == '9':
+        year = int('19' + year)
+    else:
+        year = int('20' + year)
+    no = int(no)
+    day = int(day,16)
+    return datetime.datetime(year,no,day).strftime("%Y-%m-%d")

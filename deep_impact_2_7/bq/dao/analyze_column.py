@@ -30,16 +30,23 @@ statistics_collector = collections.namedtuple("statistics_collector", [
 
 def query(dataset,table, column, column_type, limit):
     column_type = categories.data_characteristics_type.exchange[column_type]
-    try:
-        return bq.selectFromBq(statistics_collector, sql.format(target_column=column, target_column_ambigous=column, column_type = column_type,
-                                                      target_table_name=table, lim = limit))  # target_column_ambigous:キャストエラーが出ることあり
 
-    except:
-        util.debug("processing(retry) {table}.{col}".format(col=column, table=table))
-        return bq.selectFromBq(statistics_collector, sql.format(target_column=column,column_type = column_type,
-                                                      target_column_ambigous="safe_cast({column} as string)".format(column=column),
-                                                      target_table_name=table, lim = limit))  # target_column_ambigous:キャストエラーが出ることあり
+    for retry in range(5):
+        util.info("{column} try.{num}".format(column = column, num = retry))
+        pass
+        try:
+            ret = bq.selectFromBq(statistics_collector, sql.format(target_column=column, target_column_ambigous=column, column_type = column_type,
+                                                          target_table_name=table, lim = limit))  # target_column_ambigous:キャストエラーが出ることあり
 
+        except:
+            util.debug("processing(retry) {table}.{col}".format(col=column, table=table))
+            ret = bq.selectFromBq(statistics_collector, sql.format(target_column=column,column_type = column_type,
+                                                          target_column_ambigous="safe_cast({column} as string)".format(column=column),
+                                                          target_table_name=table, lim = limit))  # target_column_ambigous:キャストエラーが出ることあり
+        if ret is not None and len(ret) > 0:
+            return ret
+
+    return ret
 
 sql = """
 

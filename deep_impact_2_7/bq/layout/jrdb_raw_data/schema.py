@@ -35,6 +35,7 @@ a_bac = '''
     {"name":"sold_flag","type":"string", "mode":"nullable"},
     {"name":"win5flag","type":"string", "mode":"nullable"},
     {"name":"reserve","type":"string", "mode":"nullable"},
+    {"name":"partitioning_date","type":"date", "mode":"nullable"},
     {"name":"distributed_date","type":"datetime", "mode":"nullable"}
 ]
 
@@ -73,6 +74,7 @@ a_kab = '''
     {"name":"freezing_avoidance","type":"string", "mode":"nullable"},
     {"name":"rain","type":"float64", "mode":"nullable"},
     {"name":"reserve","type":"string", "mode":"nullable"},
+    {"name":"partitioning_date","type":"date", "mode":"nullable"},
     {"name":"distributed_date","type":"datetime", "mode":"nullable"}
 ]
 
@@ -213,6 +215,7 @@ a_kyi = '''
     {"name":"grazing_ranking","type":"string", "mode":"nullable"},
     {"name":"stable_rank","type":"string", "mode":"nullable"},
     {"name":"reserve_7","type":"string", "mode":"nullable"},
+    {"name":"partitioning_date","type":"date", "mode":"nullable"},
     {"name":"distributed_date","type":"datetime", "mode":"nullable"}
 ]
 
@@ -247,6 +250,7 @@ a_kza = '''
     {"name":"total_obstacle_performance","type":"string", "mode":"nullable"},
     {"name":"data_date","type":"datetime", "mode":"nullable"},
     {"name":"reserve","type":"string", "mode":"nullable"},
+    {"name":"partitioning_date","type":"date", "mode":"nullable"},
     {"name":"distributed_date","type":"datetime", "mode":"nullable"}
 ]
 
@@ -335,8 +339,46 @@ a_sed = '''
     {"name":"horse_pace_fluent","type":"string", "mode":"nullable"},
     {"name":"fourth_corner_catching","type":"string", "mode":"nullable"},
     {"name":"reserve_2","type":"string", "mode":"nullable"},
+    {"name":"partitioning_date","type":"date", "mode":"nullable"},
     {"name":"distributed_date","type":"datetime", "mode":"nullable"}
 ]
+
+'''
+a_tyb = '''
+[
+    {"name":"race_key_place_code","type":"string", "mode":"nullable"},
+    {"name":"race_key_year","type":"string", "mode":"nullable"},
+    {"name":"race_key_no","type":"string", "mode":"nullable"},
+    {"name":"race_key_day","type":"string", "mode":"nullable"},
+    {"name":"race_key_round","type":"string", "mode":"nullable"},
+    {"name":"horse_no","type":"string", "mode":"nullable"},
+    {"name":"IDM","type":"float64", "mode":"nullable"},
+    {"name":"jockey_index","type":"float64", "mode":"nullable"},
+    {"name":"info_index","type":"float64", "mode":"nullable"},
+    {"name":"odds_index","type":"float64", "mode":"nullable"},
+    {"name":"paddock_index","type":"float64", "mode":"nullable"},
+    {"name":"reserve_1","type":"string", "mode":"nullable"},
+    {"name":"comprehension_index","type":"float64", "mode":"nullable"},
+    {"name":"gear_change_info","type":"string", "mode":"nullable"},
+    {"name":"leg_info","type":"string", "mode":"nullable"},
+    {"name":"invalid_flag","type":"string", "mode":"nullable"},
+    {"name":"jockey_code","type":"string", "mode":"nullable"},
+    {"name":"jockey_name","type":"string", "mode":"nullable"},
+    {"name":"load_weight","type":"float64", "mode":"nullable"},
+    {"name":"apprentice_type","type":"string", "mode":"nullable"},
+    {"name":"field_status_code","type":"string", "mode":"nullable"},
+    {"name":"weather_code","type":"string", "mode":"nullable"},
+    {"name":"single_odds","type":"float64", "mode":"nullable"},
+    {"name":"multiple_odds","type":"float64", "mode":"nullable"},
+    {"name":"odds_time","type":"datetime", "mode":"nullable"},
+    {"name":"horse_weight","type":"float64", "mode":"nullable"},
+    {"name":"horse_weight_delta","type":"float64", "mode":"nullable"},
+    {"name":"odds_mark","type":"string", "mode":"nullable"},
+    {"name":"paddock_mark","type":"string", "mode":"nullable"},
+    {"name":"just_before_info","type":"string", "mode":"nullable"},
+    {"name":"reserve","type":"string", "mode":"nullable"},
+    {"name":"partitioning_date","type":"date", "mode":"nullable"},
+    {"name":"distributed_date","type":"datetime", "mode":"nullable"}]
 
 '''
 a_ukc = '''
@@ -362,6 +404,8 @@ a_ukc = '''
     {"name":"father_series_code","type":"string", "mode":"nullable"},
     {"name":"parent_series_code","type":"string", "mode":"nullable"},
     {"name":"reserve","type":"string", "mode":"nullable"},
-    {"name":"distributed_date","type":"datetime", "mode":"nullable"}]
+    {"name":"partitioning_date","type":"date", "mode":"nullable"},
+    {"name":"distributed_date","type":"datetime", "mode":"nullable"}
+]
 
 '''

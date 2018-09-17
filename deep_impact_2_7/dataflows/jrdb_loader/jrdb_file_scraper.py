@@ -8,7 +8,7 @@ import datetime
 import collections
 url_pattern = "http://www.jrdb.com/member/datazip/{table}/{path}"
 url_master_index = "http://www.jrdb.com/member/data/"
-
+url_master_2 = "http://www.jrdb.com/member/datazip/Ks/2018/KZA180908.zip"
 class scraping_request:
     def __init__(self,a0,a1,a2):
         self.table_name=a0
@@ -37,6 +37,7 @@ class JrdbParser(HTMLParser):
         self.table_name = table_name
         self.list_of_links = []
         self.list_of_year_packs = []
+        self.rule_2_enable = False
 
     def handle_starttag(self, tag, attrs):
         if tag.lower() <> "a":
@@ -48,7 +49,15 @@ class JrdbParser(HTMLParser):
                 if len(date_string) == 4:
                     self.list_of_year_packs.append((date_string, "http://www.jrdb.com/member/datazip/{table}/{path}".format(table=self.table_name.capitalize(), path=attr[1])))
                 else:
-                    self.list_of_links.append((date_string, "http://www.jrdb.com/member/datazip/{table}/{path}".format(table=self.table_name.capitalize(), path=attr[1])))
+                    if self.rule_2_enable:
+                        self.list_of_links.append((date_string,
+                                                   "http://www.jrdb.com/member/datazip/{path}".format(
+                                                       path=attr[1])))
+
+                    else:
+                        self.list_of_links.append((date_string,
+                                                   "http://www.jrdb.com/member/datazip/{table}/{path}".format(
+                                                       table=self.table_name.capitalize(), path=attr[1])))
 
 
 user =""
@@ -80,6 +89,7 @@ def get_all_zipfile_links(table_name,auth_data):
         parser.feed(http_get_from_jrdb(url_pattern.format(table= table_name.capitalize(),path="index.html"),auth_data))
     except urllib2.HTTPError as ex:
         if ex.code == 404:
+            parser.rule_2_enable = True
             parser.feed(http_get_from_jrdb(url_master_index,auth_data))
         else:
             raise ex
@@ -117,21 +127,26 @@ def file_name2date_string(file_name):
     return  (("19" if date_string[0:1] == "9" else "20") + date_string)
 
 #transform (table_name, from_date, to_date, url) to (date, byte_seq)
-def expand_zip2bytearray(table_name, from_date, to_date, url, auth_info):
+def download_zip_file_and_extract_data_needed(table_name, from_date, to_date, url, auth_info):
     table_name = cleansing_table_name(table_name)
     ret = []
 
     for file_name, byte_seq in util.extract_zip_file_entry(bytearray(http_get_from_jrdb(url, auth_info))):
         date = file_name2date_string(file_name)
+        if date == "19999999":
+            date = "19991231"
         if from_date <= date and date <= to_date and table_name in file_name.lower():
-            ret.append(zip_file_data(
-                datetime.datetime.strptime(file_name2date_string(file_name), '%Y%m%d').strftime('%Y-%m-%d'),
-                byte_seq))
+            try:
+                ret.append(zip_file_data(
+                    datetime.datetime.strptime(file_name2date_string(file_name), '%Y%m%d').strftime('%Y-%m-%d'),
+                    byte_seq))
+            except:
+                pass
     return ret
 
 def get_jrdb_data(table_name, from_date, to_date,user_id,password):
     list = get_zipfile_links(table_name, from_date, to_date,user_id,password)
     data_array = []
     for entry in list:
-        data_array.expand(expand_zip2bytearray(table_name, entry, from_date, to_date,user_id,password))
+        data_array.expand(download_zip_file_and_extract_data_needed(table_name, entry, from_date, to_date,user_id,password))
 

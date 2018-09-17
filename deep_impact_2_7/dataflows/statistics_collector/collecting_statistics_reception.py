@@ -42,12 +42,12 @@ else:
     runner = "DirectRunner"
 
     pipeline_options = AnalysisOption(
-        ['--runner', runner, '--table_name', 'a_kab', '--dataset_name', 'jrdb_raw_data', '--result_table_name', 'a_kab_stats',
+        ['--runner', runner, '--table_name', 'a_kyi', '--result_table_name', 'a_kab_stats',
          "--project", "yu-it-base", '--staging_location', 'gs://yu-it-base-temp/dataflow/staging', '--temp_location',
          'gs://yu-it-base-temp/dataflow/temp', '--setup_file', 'C:\github\deep_impact_2_7\setup.py',
-         '--template_location', 'gs://deep_impact/dataflow/collecting_statistics'])
+         ])
     loader = processor.collecting_statistics_processor()
-    loader.is_local = False
+    loader.is_local = True
     loader.run(pipeline_options)
 
 

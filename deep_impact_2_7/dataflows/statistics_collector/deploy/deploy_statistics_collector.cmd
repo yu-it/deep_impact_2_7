@@ -1,4 +1,5 @@
 call C:\Python27\venvs\beam\Scripts\activate.bat
+call :deploy a_tyb
 call :deploy a_kab
 call :deploy a_bac
 call :deploy a_kyi

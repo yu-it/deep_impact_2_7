@@ -28,12 +28,14 @@ class collecting_statistics_processor(object):
         if column_characteristics.type not in [
             categories.data_characteristics_type.real_value,
             categories.data_characteristics_type.category,
-            categories.data_characteristics_type.datetime
+            categories.data_characteristics_type.datetime,
+            categories.data_characteristics_type.date
         ]:
             return []
         if column_characteristics.type in [
             categories.data_characteristics_type.real_value,
-            categories.data_characteristics_type.datetime
+            categories.data_characteristics_type.datetime,
+            categories.data_characteristics_type.date
         ]:
             max_bucket = 10
         else:
@@ -68,10 +70,13 @@ class collecting_statistics_processor(object):
             if self.is_local:
                 records | WriteToText("#local\out\\analyzez_{table_name}.txt".format(table_name=pipeline_parameters.result_table_name))
             else:
+#                records | WriteToBigQuery(pipeline_parameters.result_table_name, pipeline_parameters.result_dataset, "yu-it-base"
+#                                          ,schema=bq_schema.as_simple_table_schema_expression(schema.statistics)
+#                                          , create_disposition=BigQueryDisposition.CREATE_IF_NEEDED,
+#                                          write_disposition=BigQueryDisposition.WRITE_TRUNCATE
+#                                          )
                 records | WriteToBigQuery(pipeline_parameters.result_table_name, pipeline_parameters.result_dataset, "yu-it-base"
                                           ,schema=bq_schema.as_simple_table_schema_expression(schema.statistics)
-                                          , create_disposition=BigQueryDisposition.CREATE_IF_NEEDED,
-                                          write_disposition=BigQueryDisposition.WRITE_TRUNCATE
                                           )
 
 

@@ -1,6 +1,6 @@
 {
   "name": "jrdb_loader",
-  "description": "ukcデータをロードする。KYIと1:1でレコードが存在する割にキーが全然違ってて扱いづらい。 jrdb_raw_data.a_ukc_formedでregister_no単位で一意に変換可能。この結果をa_ukcに上書きすることできれいにしてください。",
+  "description": "tybデータをロードする。",
   "parameters": [
   {
     "name": "from_date",

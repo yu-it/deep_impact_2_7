@@ -37,6 +37,8 @@ def get_instance(table_name):
         return processor.a_sed_loader()
     if table_name == "a_ukc":
         return processor.a_ukc_loader()
+    if table_name == "a_tyb":
+        return processor.a_tyb_loader()
 
 if len(sys.argv) > 1:
     pipeline_options = DataloadOption(sys.argv)
@@ -52,12 +54,13 @@ else:
     runner = "DirectRunner"
 
     pipeline_options = DataloadOption(
-        ['--runner', runner, '--table_name', 'a_kyi', '--dataset_name', 'jrdb_raw_data', '--from_date', '20180506',
-         '--to_date', '20180606',
+        ['--runner', runner, '--table_name', 'a_tyb', '--dataset_name', 'jrdb_raw_data', '--from_date', '20170606',
+         '--to_date', '20180708',
          "--project", "yu-it-base", '--staging_location', 'gs://yu-it-base-temp/dataflow/staging', '--temp_location',
          'gs://yu-it-base-temp/dataflow/temp', '--setup_file', 'C:\github\deep_impact_2_7\setup.py',
          '--template_location', 'gs://deep_impact/dataflow/jrdb_loader'])
     loader = get_instance(pipeline_options._flags[pipeline_options._flags.index("--table_name")+1])
+    loader.is_local = True
     loader.run(pipeline_options)
 
 

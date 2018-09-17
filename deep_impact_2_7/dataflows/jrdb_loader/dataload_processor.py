@@ -59,10 +59,9 @@ class abstract_data_loader(object):
             from_date = (from_date + datetime.timedelta(days=1)).strftime('%Y%m%d')
         return from_date
 
-    def file_to_recordset(self, file_name, byte_seq, record_length):
+    def bytes_to_fixed_length_record_sequence(self, file_name, byte_seq, record_length):
         records = [(file_name,byte_seq[idx * record_length : (1 + idx) * record_length]) for idx in range(len(byte_seq) / record_length)]
         return records
-
 
     def special_translation(self, table_name,column_name, value):
         pass
@@ -77,6 +76,8 @@ class abstract_data_loader(object):
 
         if len(column_value) == 8 and type_detail == categories.data_characteristics_type.datetime:
             return str(datetime.datetime(int(column_value[0:4]),int(column_value[4:6]),int(column_value[6:8])))
+        if len(column_value) == 8 and type_detail == categories.data_characteristics_type.date:
+            return str(datetime.date(int(column_value[0:4]),int(column_value[4:6]),int(column_value[6:8])))
 
     def map_to_record(self, recordentry, charistics):
         derive_from = recordentry[0]
@@ -96,10 +97,10 @@ class abstract_data_loader(object):
                         (entry.start_position + entry.length) - 1
                     ], "ms932"
                 ).strip()
-                if entry.type in (categories.data_characteristics_type.datetime, categories.data_characteristics_type.time):
+                if entry.type in (categories.data_characteristics_type.datetime, categories.data_characteristics_type.date, categories.data_characteristics_type.time):
                     column_value = self.convert_to_datetime(column_value,entry.type)
                 if entry.original_translation <> u"":
-                    column_value = eval(entry.original_translation,{"x":column_value})
+                    column_value = eval(entry.original_translation,{"x":column_value,"recordstring":recordstring,"util":util,"record":record, "derive_from": derive_from})
                 if entry.allow_zero == u"0" and column_value == "0":
                     column_value = ""
                 if entry.illegal_value_condition <> u"" and eval(
@@ -107,8 +108,29 @@ class abstract_data_loader(object):
                     column_value = ""
 
             except Exception as ex:
-                column_value = "-"
-                util.alert("detect {exname} at No{idx} position:{x}-{y},sequence:{seq}".format(exname=str(ex), idx = idx, x =entry[6] - 1, y =(entry[6] + entry[5]) - 1, seq=recordstring[entry[6] - 1:(entry[6] + entry[5]) - 1]))
+                column_value = None
+
+            if entry.type in (
+                    categories.data_characteristics_type.real_value) and (type(column_value) in (str,unicode)):
+                column_value = column_value.replace(" ", "")
+                column_value = column_value.replace(u" ", "")
+                if column_value not in (u'', ''):
+                    try:
+                        float(column_value)
+                    except:
+                        import random
+                        if random.random() < 0.000001:
+                            util.info("detect {exname} at No{idx} position:{x}-{y},sequence:{seq}".format(exname=str(ex), idx = idx, x =entry[6] - 1, y =(entry[6] + entry[5]) - 1, seq=recordstring[entry[6] - 1:(entry[6] + entry[5]) - 1]))
+                        return None
+
+
+            if entry.type in (
+                    categories.data_characteristics_type.real_value,
+                    categories.data_characteristics_type.datetime,
+                    categories.data_characteristics_type.date,
+                    categories.data_characteristics_type.time) and column_value == u"":
+                column_value = None
+
             record.update({entry.column_pysical_name:column_value})
 
         record.update({"distributed_date":derive_from})
@@ -143,14 +165,15 @@ class abstract_data_loader(object):
                 lines
                 | 'InitParam' >> (beam.Map(lambda x : self.init_param(x.from_date, x.to_date)))
                 #| 'SetFromDateToDate' >> (beam.Map(lambda x : expand_params(x)))
-                | 'ScrapingZipFile' >> (beam.FlatMap(lambda x : scraper.get_zipfile_links(self.table_name, x.from_date, x.to_date, self.auth_data)))
-                | 'RetrieveData' >> (beam.FlatMap(lambda x : scraper.expand_zip2bytearray(x.table_name, x.from_date, x.to_date, x.url, self.auth_data )))
-                | 'FileToRecordSequence' >> (beam.FlatMap(lambda x: self.file_to_recordset(x.file_name, x.byte_seq,self.characteristics[0].record_length)))
+                | 'ScrapingZipFileLink' >> (beam.FlatMap(lambda x : scraper.get_zipfile_links(self.table_name, x.from_date, x.to_date, self.auth_data)))
+                | 'DownloadZipFileAndExtractDataNeeded' >> (beam.FlatMap(lambda x : scraper.download_zip_file_and_extract_data_needed(x.table_name, x.from_date, x.to_date, x.url, self.auth_data )))
+                | 'BytesToFixedLengthRecordSequence' >> (beam.FlatMap(lambda x: self.bytes_to_fixed_length_record_sequence(x.file_name, x.byte_seq,self.characteristics[0].record_length)))
                 | 'MapToColumns' >> (beam.Map(lambda x: self.map_to_record(x, self.characteristics)))
+                | 'NullSkip' >> (beam.Filter(lambda x: x is not None))
             )
             util.debug("exec pipeline")
             if self.is_local:
-                records | WriteToText("#local\out\\testx_{table_name}.txt".format(table_name=self.table_name))
+                records | WriteToText("#local\out\\testxx_{table_name}.txt".format(table_name=self.table_name))
             else:
                 if self.truncate:
                     records | WriteToBigQuery(self.table_name, self.dataset_name, "yu-it-base"
@@ -181,3 +204,6 @@ class a_sed_loader(abstract_data_loader):
 class a_ukc_loader(abstract_data_loader):
     def __init__(self):
         super(a_ukc_loader, self).__init__("jrdb_raw_data", "a_ukc")
+class a_tyb_loader(abstract_data_loader):
+    def __init__(self):
+        super(a_tyb_loader, self).__init__("jrdb_raw_data", "a_tyb")

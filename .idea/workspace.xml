@@ -2,19 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7e823435-9edc-4f5e-8f96-04ca59a74679" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/bq/categories.py" afterPath="$PROJECT_DIR$/deep_impact_2_7/bq/categories.py" />
-      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/bq/dao/analyze_column.py" afterPath="$PROJECT_DIR$/deep_impact_2_7/bq/dao/analyze_column.py" />
       <change beforePath="$PROJECT_DIR$/deep_impact_2_7/bq/layout/jrdb_raw_data/schema.py" afterPath="$PROJECT_DIR$/deep_impact_2_7/bq/layout/jrdb_raw_data/schema.py" />
       <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_processor.py" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_processor.py" />
       <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_reception.py" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_reception.py" />
-      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/jrdb_ukc_loader_metadata" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/jrdb_ukc_loader_metadata" />
-      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/jrdb_file_scraper.py" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/jrdb_file_scraper.py" />
-      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/statistics_collector/collecting_statistics_processor.py" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/statistics_collector/collecting_statistics_processor.py" />
-      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/statistics_collector/collecting_statistics_reception.py" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/statistics_collector/collecting_statistics_reception.py" />
-      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/statistics_collector/deploy/deploy_statistics_collector.cmd" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/statistics_collector/deploy/deploy_statistics_collector.cmd" />
-      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/util.py" afterPath="$PROJECT_DIR$/deep_impact_2_7/util.py" />
+      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_all.cmd" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_all.cmd" />
+      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_bac.cmd" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_bac.cmd" />
+      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_kab.cmd" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_kab.cmd" />
+      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_kyi.cmd" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_kyi.cmd" />
+      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_kza.cmd" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_kza.cmd" />
+      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_sed.cmd" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_sed.cmd" />
+      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_tyb.cmd" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_tyb.cmd" />
+      <change beforePath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_ukc.cmd" afterPath="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/deploy/deploy_ukc.cmd" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -28,8 +27,8 @@
       <file leaf-file-name="dataload_processor.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_processor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1110">
-              <caret line="117" column="0" lean-forward="false" selection-start-line="117" selection-start-column="0" selection-end-line="117" selection-end-column="0" />
+            <state relative-caret-position="264">
+              <caret line="85" column="53" lean-forward="true" selection-start-line="85" selection-start-column="53" selection-end-line="85" selection-end-column="53" />
               <folding>
                 <element signature="e#231#246#0" expanded="true" />
               </folding>
@@ -40,8 +39,8 @@
       <file leaf-file-name="util.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/deep_impact_2_7/util.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1848">
-              <caret line="59" column="5" lean-forward="false" selection-start-line="59" selection-start-column="5" selection-end-line="59" selection-end-column="5" />
+            <state relative-caret-position="486">
+              <caret line="54" column="4" lean-forward="false" selection-start-line="54" selection-start-column="4" selection-end-line="54" selection-end-column="4" />
               <folding>
                 <element signature="e#24#38#0" expanded="true" />
               </folding>
@@ -52,8 +51,8 @@
       <file leaf-file-name="dataload_reception.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_reception.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1716">
-              <caret line="56" column="107" lean-forward="false" selection-start-line="56" selection-start-column="107" selection-end-line="56" selection-end-column="107" />
+            <state relative-caret-position="780">
+              <caret line="63" column="13" lean-forward="false" selection-start-line="63" selection-start-column="13" selection-end-line="63" selection-end-column="13" />
               <folding>
                 <element signature="e#23#33#0" expanded="true" />
               </folding>
@@ -76,8 +75,8 @@
       <file leaf-file-name="jrdb_file_scraper.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/jrdb_file_scraper.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4455">
-              <caret line="140" column="67" lean-forward="false" selection-start-line="140" selection-start-column="67" selection-end-line="140" selection-end-column="67" />
+            <state relative-caret-position="783">
+              <caret line="106" column="0" lean-forward="false" selection-start-line="106" selection-start-column="0" selection-end-line="106" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -106,8 +105,8 @@
       <file leaf-file-name="analyze_column.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/deep_impact_2_7/bq/dao/analyze_column.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2112">
-              <caret line="64" column="14" lean-forward="false" selection-start-line="64" selection-start-column="14" selection-end-line="64" selection-end-column="14" />
+            <state relative-caret-position="5610">
+              <caret line="170" column="29" lean-forward="false" selection-start-line="170" selection-start-column="29" selection-end-line="170" selection-end-column="29" />
               <folding>
                 <element signature="e#24#58#0" expanded="true" />
               </folding>
@@ -118,8 +117,8 @@
       <file leaf-file-name="schemaUtil.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/deep_impact_2_7/bq/schemaUtil.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1155">
-              <caret line="38" column="26" lean-forward="false" selection-start-line="38" selection-start-column="26" selection-end-line="38" selection-end-column="26" />
+            <state relative-caret-position="396">
+              <caret line="15" column="20" lean-forward="true" selection-start-line="15" selection-start-column="20" selection-end-line="15" selection-end-column="20" />
               <folding />
             </state>
           </provider>
@@ -136,9 +135,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>max_from_date</find>
-      <find>self.get_last_distributed_date(table_name)</find>
-      <find>max_</find>
       <find>get_last_distributed_date</find>
       <find>truncate</find>
       <find>99999999</find>
@@ -166,6 +162,9 @@
       <find>file_t</find>
       <find>expand_zip2bytearray</find>
       <find>file_to_recordset</find>
+      <find>writeto</find>
+      <find>record_length</find>
+      <find>characterist</find>
     </findStrings>
     <replaceStrings>
       <replace>distributed_date</replace>
@@ -207,14 +206,14 @@
         <option value="$PROJECT_DIR$/deep_impact_2_7/dataflows/statistics_collector/collecting_statistics_reception.py" />
         <option value="$PROJECT_DIR$/deep_impact_2_7/bq/dao/analyze_column.py" />
         <option value="$PROJECT_DIR$/deep_impact_2_7/bq/categories.py" />
-        <option value="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_reception.py" />
         <option value="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/jrdb_file_scraper.py" />
         <option value="$PROJECT_DIR$/deep_impact_2_7/util.py" />
+        <option value="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_reception.py" />
         <option value="$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_processor.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="1224" />
     <option name="y" value="123" />
     <option name="width" value="1390" />
@@ -260,7 +259,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -333,6 +331,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
       <pane id="Scratches" />
     </panes>
   </component>
@@ -487,7 +486,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-13" y="-13" width="2762" height="1770" extended-state="7" />
+    <frame x="-13" y="-13" width="2762" height="1770" extended-state="6" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19736843" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -565,19 +564,24 @@
           <option name="timeStamp" value="161" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/deep_impact_2_7/bq/schemaUtil.py</url>
-          <line>49</line>
-          <option name="timeStamp" value="162" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/deep_impact_2_7/dataflows/statistics_collector/collecting_statistics_processor.py</url>
           <line>42</line>
           <option name="timeStamp" value="163" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/jrdb_file_scraper.py</url>
-          <line>106</line>
-          <option name="timeStamp" value="164" />
+          <url>file://$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_processor.py</url>
+          <line>121</line>
+          <option name="timeStamp" value="165" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_processor.py</url>
+          <line>63</line>
+          <option name="timeStamp" value="166" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_processor.py</url>
+          <line>83</line>
+          <option name="timeStamp" value="167" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -587,7 +591,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="165" />
+      <option name="time" value="168" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -972,31 +976,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/deep_impact_2_7/dataflows/statistics_collector/collecting_statistics_reception.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="924">
-          <caret line="32" column="21" lean-forward="false" selection-start-line="32" selection-start-column="21" selection-end-line="32" selection-end-column="21" />
-          <folding>
-            <element signature="e#23#33#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/deep_impact_2_7/bq/categories.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="363">
           <caret line="11" column="8" lean-forward="false" selection-start-line="11" selection-start-column="8" selection-end-line="11" selection-end-column="8" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/deep_impact_2_7/bq/dao/analyze_column.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2112">
-          <caret line="64" column="14" lean-forward="false" selection-start-line="64" selection-start-column="14" selection-end-line="64" selection-end-column="14" />
-          <folding>
-            <element signature="e#24#58#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1007,18 +991,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/deep_impact_2_7/bq/schemaUtil.py">
+    <entry file="file://$PROJECT_DIR$/deep_impact_2_7/bq/dao/analyze_column.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1155">
-          <caret line="38" column="26" lean-forward="false" selection-start-line="38" selection-start-column="26" selection-end-line="38" selection-end-column="26" />
-          <folding />
+        <state relative-caret-position="5610">
+          <caret line="170" column="29" lean-forward="false" selection-start-line="170" selection-start-column="29" selection-end-line="170" selection-end-column="29" />
+          <folding>
+            <element signature="e#24#58#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_reception.py">
+    <entry file="file://$PROJECT_DIR$/deep_impact_2_7/dataflows/statistics_collector/collecting_statistics_reception.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1716">
-          <caret line="56" column="107" lean-forward="false" selection-start-line="56" selection-start-column="107" selection-end-line="56" selection-end-column="107" />
+        <state relative-caret-position="924">
+          <caret line="32" column="21" lean-forward="false" selection-start-line="32" selection-start-column="21" selection-end-line="32" selection-end-column="21" />
           <folding>
             <element signature="e#23#33#0" expanded="true" />
           </folding>
@@ -1027,16 +1013,34 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/jrdb_file_scraper.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4455">
-          <caret line="140" column="67" lean-forward="false" selection-start-line="140" selection-start-column="67" selection-end-line="140" selection-end-column="67" />
+        <state relative-caret-position="783">
+          <caret line="106" column="0" lean-forward="false" selection-start-line="106" selection-start-column="0" selection-end-line="106" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_reception.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="780">
+          <caret line="63" column="13" lean-forward="false" selection-start-line="63" selection-start-column="13" selection-end-line="63" selection-end-column="13" />
+          <folding>
+            <element signature="e#23#33#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/deep_impact_2_7/bq/schemaUtil.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="396">
+          <caret line="15" column="20" lean-forward="true" selection-start-line="15" selection-start-column="20" selection-end-line="15" selection-end-column="20" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/deep_impact_2_7/util.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1848">
-          <caret line="59" column="5" lean-forward="false" selection-start-line="59" selection-start-column="5" selection-end-line="59" selection-end-column="5" />
+        <state relative-caret-position="486">
+          <caret line="54" column="4" lean-forward="false" selection-start-line="54" selection-start-column="4" selection-end-line="54" selection-end-column="4" />
           <folding>
             <element signature="e#24#38#0" expanded="true" />
           </folding>
@@ -1045,8 +1049,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/deep_impact_2_7/dataflows/jrdb_loader/dataload_processor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1110">
-          <caret line="117" column="0" lean-forward="false" selection-start-line="117" selection-start-column="0" selection-end-line="117" selection-end-column="0" />
+        <state relative-caret-position="264">
+          <caret line="85" column="53" lean-forward="true" selection-start-line="85" selection-start-column="53" selection-end-line="85" selection-end-column="53" />
           <folding>
             <element signature="e#231#246#0" expanded="true" />
           </folding>

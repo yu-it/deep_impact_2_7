@@ -54,8 +54,8 @@ else:
     runner = "DirectRunner"
 
     pipeline_options = DataloadOption(
-        ['--runner', runner, '--table_name', 'a_tyb', '--dataset_name', 'jrdb_raw_data', '--from_date', '20170606',
-         '--to_date', '20180708',
+        ['--runner', runner, '--table_name', 'a_bac', '--dataset_name', 'jrdb_raw_data', '--from_date', '00000000',
+         '--to_date', '99999999',
          "--project", "yu-it-base", '--staging_location', 'gs://yu-it-base-temp/dataflow/staging', '--temp_location',
          'gs://yu-it-base-temp/dataflow/temp', '--setup_file', 'C:\github\deep_impact_2_7\setup.py',
          '--template_location', 'gs://deep_impact/dataflow/jrdb_loader'])

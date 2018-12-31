@@ -1,6 +1,8 @@
 
 a_bac = '''
 [
+    {"name":"held_key","type":"string", "mode":"nullable"},
+    {"name":"race_key","type":"string", "mode":"nullable"},
     {"name":"race_key_place_code","type":"string", "mode":"nullable"},
     {"name":"race_key_year","type":"string", "mode":"nullable"},
     {"name":"race_key_no","type":"string", "mode":"nullable"},
@@ -42,6 +44,7 @@ a_bac = '''
 '''
 a_kab = '''
 [
+    {"name":"held_key","type":"string", "mode":"nullable"},
     {"name":"held_key_place_code","type":"string", "mode":"nullable"},
     {"name":"held_key_year","type":"string", "mode":"nullable"},
     {"name":"held_key_no","type":"string", "mode":"nullable"},
@@ -81,6 +84,9 @@ a_kab = '''
 '''
 a_kyi = '''
 [
+    {"name":"held_key","type":"string", "mode":"nullable"},
+    {"name":"race_key","type":"string", "mode":"nullable"},
+    {"name":"horse_key","type":"string", "mode":"nullable"},
     {"name":"race_key_place_code","type":"string", "mode":"nullable"},
     {"name":"race_key_year","type":"string", "mode":"nullable"},
     {"name":"race_key_no","type":"string", "mode":"nullable"},
@@ -257,6 +263,9 @@ a_kza = '''
 '''
 a_sed = '''
 [
+    {"name":"held_key","type":"string", "mode":"nullable"},
+    {"name":"race_key","type":"string", "mode":"nullable"},
+    {"name":"horse_key","type":"string", "mode":"nullable"},
     {"name":"race_key_place_code","type":"string", "mode":"nullable"},
     {"name":"race_key_year","type":"string", "mode":"nullable"},
     {"name":"race_key_no","type":"string", "mode":"nullable"},
@@ -346,6 +355,9 @@ a_sed = '''
 '''
 a_tyb = '''
 [
+    {"name":"held_key","type":"string", "mode":"nullable"},
+    {"name":"race_key","type":"string", "mode":"nullable"},
+    {"name":"horse_key","type":"string", "mode":"nullable"},
     {"name":"race_key_place_code","type":"string", "mode":"nullable"},
     {"name":"race_key_year","type":"string", "mode":"nullable"},
     {"name":"race_key_no","type":"string", "mode":"nullable"},

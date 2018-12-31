@@ -85,10 +85,10 @@ class abstract_data_loader(object):
         record = {}
         for idx,entry in enumerate(charistics[0:-1]):
 
-            util.debug("No{idx} position:{x}-{y}".format(
-                idx = idx,
-                x = entry.start_position - 1,
-                y = (entry.start_position + entry.length) - 1))
+            #util.debug("No{idx} position:{x}-{y}".format(
+            #    idx = idx,
+            #    x = entry.start_position - 1,
+            #    y = (entry.start_position + entry.length) - 1))
             try:
                 column_value = str.decode(
                     recordstring[
@@ -101,7 +101,7 @@ class abstract_data_loader(object):
                     column_value = self.convert_to_datetime(column_value,entry.type)
                 if entry.original_translation <> u"":
                     column_value = eval(entry.original_translation,{"x":column_value,"recordstring":recordstring,"util":util,"record":record, "derive_from": derive_from})
-                if entry.allow_zero == u"0" and column_value == "0":
+                if (entry.allow_zero == u"0" or entry.allow_zero == "0") and column_value == "0":
                     column_value = ""
                 if entry.illegal_value_condition <> u"" and eval(
                         entry.illegal_value_condition,{"x":column_value}):
